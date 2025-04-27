@@ -2,42 +2,57 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>扫码解锁体验</title>
   <link rel="stylesheet" href="docs/style.css">
-  <script src="https://unpkg.com/three@0.154.0/build/three.min.js"></script>
-  <script src="https://unpkg.com/three@0.154.0/examples/js/loaders/GLTFLoader.js"></script>
+  <!-- Three.js 依赖 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <!-- 滑动依赖 -->
+  <script src="https://unpkg.com/hammerjs@2.0.8/hammer.min.js"></script>
+  <!-- 扫码依赖 -->
   <script src="https://unpkg.com/html5-qrcode@2.3.7/html5-qrcode.min.js"></script>
 </head>
 <body>
 
 <div id="slider">
+  <!-- 统一slide结构 -->
   <div class="slide" data-index="0">
+    <div class="locked-overlay" id="lockOverlay0">请扫码解锁角色A</div>
     <canvas class="model-canvas" id="modelCanvas0"></canvas>
-    <button class="scan-btn" onclick="openScanner()">扫码解锁</button>
+    <button class="scan-btn" data-target="0" onclick="openScanner(0)">扫码解锁</button>
   </div>
   <div class="slide" data-index="1">
-    <div class="locked-overlay" id="lockOverlay1">请扫码解锁</div>
+    <div class="locked-overlay" id="lockOverlay1">请扫码解锁角色B</div>
     <canvas class="model-canvas" id="modelCanvas1"></canvas>
-    <button class="scan-btn" onclick="openScanner()">扫码解锁</button>
+    <button class="scan-btn" data-target="1" onclick="openScanner(1)">扫码解锁</button>
   </div>
   <div class="slide" data-index="2">
-    <div class="locked-overlay" id="lockOverlay2">请扫码解锁</div>
+    <div class="locked-overlay" id="lockOverlay2">请扫码解锁角色C</div>
     <canvas class="model-canvas" id="modelCanvas2"></canvas>
-    <button class="scan-btn" onclick="openScanner()">扫码解锁</button>
+    <button class="scan-btn" data-target="2" onclick="openScanner(2)">扫码解锁</button>
   </div>
   <div class="slide" data-index="3">
-    <div class="locked-overlay" id="lockOverlay3">请扫码解锁</div>
+    <div class="locked-overlay" id="lockOverlay3">请先解锁前三个角色</div>
     <canvas class="model-canvas" id="modelCanvas3"></canvas>
   </div>
 </div>
 
+<!-- 分页指示器 -->
+<div id="pagination">
+  <span class="dot active"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+</div>
+
 <!-- 扫码界面 -->
-<div id="scanner-overlay">
+<div id="scanner-overlay" class="hidden">
   <div id="scanner-header">
-    <button id="backButton" onclick="closeScanner()">返回</button>
+    <button id="backButton" onclick="closeScanner()">‹ 返回</button>
   </div>
   <div id="qr-reader"></div>
+  <div class="scan-hint">将二维码对准扫描框</div>
 </div>
 
 <script src="docs/script.js"></script>
