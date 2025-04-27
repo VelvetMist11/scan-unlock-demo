@@ -1,87 +1,144 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body, html {
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box;
+}
+
+html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  font-family: Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  touch-action: pan-y; /* 限制为垂直滑动 */
 }
 
 #slider {
   display: flex;
   width: 400%;
   height: 100vh;
-  transition: transform 0.5s ease;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
 }
 
 .slide {
   position: relative;
-  flex: 0 0 100%;
+  flex: 0 0 100vw;
   height: 100vh;
-  background: #000;
+  overflow: hidden;
 }
 
 .model-canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.scan-btn {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  background: #fff;
-  color: #000;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 5px;
-  font-size: 14px;
-  cursor: pointer;
-  z-index: 10;
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 1;
 }
 
 .locked-overlay {
   position: absolute;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.6);
-  color: #fff;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
   font-size: 24px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  z-index: 5;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
 }
 
-/* 扫码界面全屏 */
+.scan-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #07c160;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  z-index: 3;
+  cursor: pointer;
+  transition: transform 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.scan-btn:active {
+  transform: scale(0.95);
+}
+
+/* 微信风格扫码界面 */
 #scanner-overlay {
   position: fixed;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  background: #000;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(10px);
   display: none;
   flex-direction: column;
   z-index: 10000;
 }
 
 #scanner-header {
-  height: 50px;
+  height: 60px;
+  padding: 0 16px;
   display: flex;
   align-items: center;
-  padding: 0 10px;
-  background: #111;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 #backButton {
   background: none;
-  color: #fff;
   border: none;
-  font-size: 16px;
-  cursor: pointer;
+  color: white;
+  font-size: 28px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #qr-reader {
   flex: 1;
+  width: 80%;
+  max-width: 400px;
+  margin: 0 auto;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* 分页指示器 */
+#pagination {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  z-index: 3;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transition: all 0.3s;
+}
+
+.dot.active {
+  background: #fff;
+  transform: scale(1.4);
 }
