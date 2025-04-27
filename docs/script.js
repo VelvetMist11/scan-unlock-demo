@@ -1,57 +1,109 @@
-// 初始化Three.js场景
-function initScene(canvasId, modelPath) {
+let currentIndex = 0;
+const totalSlides = 4;
+let unlockedSlides = [false, false, false, false];
+let qrScanner;
+let scanTarget = 0;
+
+// 分页指示器更新
+function updatePagination() {
+  const dots = document.querySelectorAll('.dot');
+  dots.forEach((dot, idx) => {
+    dot.classList.toggle('active', idx === currentIndex);
+  });
+}
+
+// 滑动切换
+function goToSlide(index) {
+  const slider = document.getElementById('slider-container');
+  slider.style.transform = `translateX(-${index * 100}vw)`;
+  currentIndex = index;
+  updatePagination();
+}
+
+// 初始化 Three.js（这里可以根据需要修改）
+function initThreeJS(canvasId) {
   const canvas = document.getElementById(canvasId);
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+  const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
-  camera.position.z = 3;
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+  camera.position.z = 5;
 
   const loader = new THREE.GLTFLoader();
-  loader.load(modelPath, (gltf) => {
+  loader.load('model.glb', function(gltf) {
     scene.add(gltf.scene);
-  }, undefined, (error) => {
-    console.error('模型加载失败', error);
+    animate();
+  }, undefined, function(error) {
+    console.error(error);
   });
 
   function animate() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
   }
-  animate();
 }
 
-// 批量初始化
-['model1.glb', 'model2.glb', 'model3.glb', 'model4.glb'].forEach((model, index) => {
-  initScene(`modelCanvas${index}`, `docs/models/${model}`);
+// 绑定扫码按钮
+document.querySelectorAll('.scan-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    scanTarget = parseInt(this.getAttribute('data-target'));
+    document.getElementById('qr-overlay').style.display = 'flex';
+
+    if (!qrScanner) {
+      qrScanner = new Html5Qrcode("qr-reader");
+    }
+
+    qrScanner.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 }
+      },
+      qrCodeMessage => {
+        if (qrCodeMessage) {
+          unlockSlide(scanTarget);
+          qrScanner.stop();
+          document.getElementById('qr-overlay').style.display = 'none';
+        }
+      },
+      errorMessage => {
+        // 扫码错误可以忽略
+      }
+    );
+  });
 });
 
-// 分页指示器逻辑（可补充左右滑动逻辑）
+// 解锁
+function unlockSlide(index) {
+  unlockedSlides[index] = true;
+  document.querySelectorAll('.locked-overlay')[index].style.display = 'none';
+}
 
-// 扫码按钮逻辑
-const scanButton = document.getElementById('scanButton');
-const scannerOverlay = document.getElementById('scanner-overlay');
-const backButton = document.getElementById('backButton');
+// 关闭扫码界面
+document.getElementById('close-scan').addEventListener('click', function() {
+  if (qrScanner) {
+    qrScanner.stop();
+  }
+  document.getElementById('qr-overlay').style.display = 'none';
+});
 
-scanButton.onclick = () => {
-  scannerOverlay.style.display = 'flex';
-  const html5QrCode = new Html5Qrcode("qr-reader");
-  html5QrCode.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: { width: 250, height: 250 } },
-    (decodedText, decodedResult) => {
-      console.log(`扫码成功: ${decodedText}`);
-      html5QrCode.stop();
-      scannerOverlay.style.display = 'none';
-      // 根据扫码内容解锁某一页
-    },
-    (errorMessage) => {
-      // 忽略连续失败
-    }
-  );
-};
+// 滑动监听（简单示范，可以完善）
+let startX = 0;
+document.getElementById('slider-container').addEventListener('touchstart', e => {
+  startX = e.touches[0].clientX;
+});
 
-backButton.onclick = () => {
-  scannerOverlay.style.display = 'none';
-};
+document.getElementById('slider-container').addEventListener('touchend', e => {
+  let endX = e.changedTouches[0].clientX;
+  if (endX < startX - 50) {
+    goToSlide(Math.min(currentIndex + 1, totalSlides - 1));
+  } else if (endX > startX + 50) {
+    goToSlide(Math.max(currentIndex - 1, 0));
+  }
+});
+
+// 初始化所有模型（可选，可以按需加载）
+for (let i = 0; i < totalSlides; i++) {
+  initThreeJS('model' + i);
+}
