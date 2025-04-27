@@ -2,20 +2,28 @@
   <!-- 滑动容器 -->
   <div id="slider-container">
     <div class="slide">
-      <canvas id="modelCanvas0" class="model-canvas"></canvas>
-      <div class="locked-overlay">请扫码解锁</div>
+      <canvas id="model0" class="model-canvas"></canvas>
+      <div class="locked-overlay">请扫码解锁
+        <button class="scan-btn" data-target="0">扫码解锁</button>
+      </div>
     </div>
     <div class="slide">
-      <canvas id="modelCanvas1" class="model-canvas"></canvas>
-      <div class="locked-overlay">请扫码解锁</div>
+      <canvas id="model1" class="model-canvas"></canvas>
+      <div class="locked-overlay">请扫码解锁
+        <button class="scan-btn" data-target="1">扫码解锁</button>
+      </div>
     </div>
     <div class="slide">
-      <canvas id="modelCanvas2" class="model-canvas"></canvas>
-      <div class="locked-overlay">请扫码解锁</div>
+      <canvas id="model2" class="model-canvas"></canvas>
+      <div class="locked-overlay">请扫码解锁
+        <button class="scan-btn" data-target="2">扫码解锁</button>
+      </div>
     </div>
     <div class="slide">
-      <canvas id="modelCanvas3" class="model-canvas"></canvas>
-      <div class="locked-overlay">请扫码解锁</div>
+      <canvas id="model3" class="model-canvas"></canvas>
+      <div class="locked-overlay">请扫码解锁
+        <button class="scan-btn" data-target="3">扫码解锁</button>
+      </div>
     </div>
   </div>
 
@@ -27,13 +35,10 @@
     <span class="dot"></span>
   </div>
 
-  <!-- 扫码按钮 -->
-  <button class="scan-btn" id="scanButton">扫码解锁</button>
-
   <!-- 扫码界面 -->
-  <div id="scanner-overlay">
+  <div id="qr-overlay">
     <div id="scanner-header">
-      <button id="backButton">×</button>
+      <button id="close-scan">×</button>
     </div>
     <div id="qr-reader"></div>
   </div>
@@ -46,5 +51,5 @@
   <script src="https://unpkg.com/html5-qrcode@2.2.1/minified/html5-qrcode.min.js"></script>
 
   <!-- 自己的JS逻辑 -->
-  <script src="main.js"></script>
+  <script src="script.js"></script>
 </body>
