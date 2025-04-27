@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>扫码解锁体验</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/three@0.154.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.154.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.7/html5-qrcode.min.js"></script>
+</head>
+<body>
+
+<div id="slider">
+  <div class="slide" data-index="0">
+    <canvas class="model-canvas" id="modelCanvas0"></canvas>
+    <button class="scan-btn" onclick="openScanner()">扫码解锁</button>
+  </div>
+  <div class="slide" data-index="1">
+    <div class="locked-overlay" id="lockOverlay1">请扫码解锁</div>
+    <canvas class="model-canvas" id="modelCanvas1"></canvas>
+    <button class="scan-btn" onclick="openScanner()">扫码解锁</button>
+  </div>
+  <div class="slide" data-index="2">
+    <div class="locked-overlay" id="lockOverlay2">请扫码解锁</div>
+    <canvas class="model-canvas" id="modelCanvas2"></canvas>
+    <button class="scan-btn" onclick="openScanner()">扫码解锁</button>
+  </div>
+  <div class="slide" data-index="3">
+    <div class="locked-overlay" id="lockOverlay3">请扫码解锁</div>
+    <canvas class="model-canvas" id="modelCanvas3"></canvas>
+  </div>
+</div>
+
+<!-- 扫码界面 -->
+<div id="scanner-overlay">
+  <div id="scanner-header">
+    <button id="backButton" onclick="closeScanner()">返回</button>
+  </div>
+  <div id="qr-reader"></div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
