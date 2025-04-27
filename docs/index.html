@@ -1,119 +1,54 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>全屏3D互动画廊</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://unpkg.com/hammerjs@2.0.8/hammer.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.7/html5-qrcode.min.js"></script>
+</head>
+<body>
+    <div id="slider-container">
+        <div class="slide">
+            <canvas class="model-canvas" id="model0"></canvas>
+            <div class="locked-overlay">扫描解锁角色A</div>
+            <button class="scan-btn" data-target="0">扫码解锁</button>
+        </div>
+        <div class="slide">
+            <canvas class="model-canvas" id="model1"></canvas>
+            <div class="locked-overlay">扫描解锁角色B</div>
+            <button class="scan-btn" data-target="1">扫码解锁</button>
+        </div>
+        <div class="slide">
+            <canvas class="model-canvas" id="model2"></canvas>
+            <div class="locked-overlay">扫描解锁角色C</div>
+            <button class="scan-btn" data-target="2">扫码解锁</button>
+        </div>
+        <div class="slide">
+            <canvas class="model-canvas" id="model3"></canvas>
+            <div class="locked-overlay">解锁前三个角色查看</div>
+        </div>
+    </div>
 
-html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-    touch-action: pan-y;
-}
+    <div id="pagination">
+        <span class="dot active"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+    </div>
 
-#slider-container {
-    display: flex;
-    width: 400vw;
-    height: 100vh;
-    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    will-change: transform;
-}
+    <div id="qr-overlay">
+        <div id="qr-header">
+            <button id="close-scan">‹ 返回</button>
+        </div>
+        <div id="qr-reader"></div>
+        <div class="scan-hint">将二维码放入框内扫描</div>
+    </div>
 
-.slide {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    flex-shrink: 0;
-}
-
-.model-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100% !important;
-    height: 100% !important;
-    z-index: 1;
-}
-
-.locked-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.85);
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 24px;
-    z-index: 2;
-    pointer-events: none;
-}
-
-.scan-btn {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #07c160;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 16px;
-    z-index: 3;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    transition: transform 0.2s;
-}
-
-.scan-btn:active {
-    transform: scale(0.95);
-}
-
-#pagination {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 12px;
-    z-index: 3;
-}
-
-.dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.4);
-    transition: all 0.3s;
-}
-
-.dot.active {
-    background: #fff;
-    transform: scale(1.4);
-}
-
-#qr-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.95);
-    backdrop-filter: blur(10px);
-    display: none;
-    flex-direction: column;
-    z-index: 10000;
-}
-
-#qr-reader {
-    width: 80%;
-    max-width: 400px;
-    margin: 0 auto;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-radius: 12px;
-    overflow: hidden;
-    flex: 1;
-}
+    <script src="script.js"></script>
+</body>
+</html>
