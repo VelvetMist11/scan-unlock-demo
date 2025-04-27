@@ -2,28 +2,20 @@
   <!-- 滑动容器 -->
   <div id="slider-container">
     <div class="slide">
-      <canvas id="model0" class="model-canvas"></canvas>
-      <div class="locked-overlay">请扫码解锁
-        <button class="scan-btn" data-target="0">扫码解锁</button>
-      </div>
+      <canvas id="modelCanvas0" class="model-canvas"></canvas>
+      <button class="scan-btn" data-target="0">扫码解锁</button>
     </div>
     <div class="slide">
-      <canvas id="model1" class="model-canvas"></canvas>
-      <div class="locked-overlay">请扫码解锁
-        <button class="scan-btn" data-target="1">扫码解锁</button>
-      </div>
+      <canvas id="modelCanvas1" class="model-canvas"></canvas>
+      <button class="scan-btn" data-target="1">扫码解锁</button>
     </div>
     <div class="slide">
-      <canvas id="model2" class="model-canvas"></canvas>
-      <div class="locked-overlay">请扫码解锁
-        <button class="scan-btn" data-target="2">扫码解锁</button>
-      </div>
+      <canvas id="modelCanvas2" class="model-canvas"></canvas>
+      <button class="scan-btn" data-target="2">扫码解锁</button>
     </div>
     <div class="slide">
-      <canvas id="model3" class="model-canvas"></canvas>
-      <div class="locked-overlay">请扫码解锁
-        <button class="scan-btn" data-target="3">扫码解锁</button>
-      </div>
+      <canvas id="modelCanvas3" class="model-canvas"></canvas>
+      <button class="scan-btn" data-target="3">扫码解锁</button>
     </div>
   </div>
 
@@ -36,20 +28,16 @@
   </div>
 
   <!-- 扫码界面 -->
-  <div id="qr-overlay">
+  <div id="scanner-overlay">
     <div id="scanner-header">
-      <button id="close-scan">×</button>
+      <button id="backButton">×</button>
     </div>
     <div id="qr-reader"></div>
   </div>
 
-  <!-- Three.js 和 GLTFLoader -->
+  <!-- 脚本 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-
-  <!-- html5-qrcode -->
   <script src="https://unpkg.com/html5-qrcode@2.2.1/minified/html5-qrcode.min.js"></script>
-
-  <!-- 自己的JS逻辑 -->
-  <script src="script.js"></script>
+  <script src="main.js"></script>
 </body>
