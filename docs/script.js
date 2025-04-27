@@ -7,10 +7,10 @@ const html5QrCode = new Html5Qrcode("qr-reader");
 
 // 初始化加载四个模型
 const modelPaths = [
-  'models/model1.glb',
-  'models/model2.glb',
-  'models/model3.glb',
-  'models/model4.glb'
+  'docs/models/model1.glb',
+  'docs/models/model2.glb',
+  'docs/models/model3.glb',
+  'docs/models/model4.glb'
 ];
 
 const mixers = [];
