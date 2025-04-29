@@ -1,93 +1,104 @@
-html, body {
+* {
   margin: 0;
   padding: 0;
-  overflow: hidden;
-  height: 100%;
-  width: 100%;
-  background-color: #000;
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
 }
 
-#slider-container {
-  display: flex;
-  width: 400vw; /* 4页，每页100vw */
-  height: 100vh;
-  transition: transform 0.5s ease;
-}
-
-.slide {
-  position: relative;
+html, body {
   width: 100vw;
   height: 100vh;
-  flex-shrink: 0;
   overflow: hidden;
+  font-family: sans-serif;
+  background: #000;
+}
+
+/* 单页布局 */
+.page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: none;
+}
+
+.page.active {
+  display: block;
 }
 
 .model-canvas {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 100vw !important;
+  height: 100vh !important;
+  display: block;
+  background: #111;
 }
 
+/* 扫码按钮 */
 .scan-btn {
   position: absolute;
-  bottom: 15%;
+  bottom: 15vh;
   left: 50%;
   transform: translateX(-50%);
-  padding: 12px 24px;
-  background-color: rgba(255,255,255,0.8);
-  color: #000;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: #fff;
   border: none;
-  border-radius: 30px;
   font-size: 16px;
   z-index: 10;
 }
 
-#pagination {
-  position: absolute;
-  bottom: 10%;
+/* 左右跳转按钮 */
+.nav-buttons {
+  position: fixed;
+  bottom: 5vh;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 10px;
+  gap: 40px;
+  z-index: 15;
 }
 
-.dot {
-  width: 10px;
-  height: 10px;
-  background: #ccc;
+.nav-buttons button {
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
   border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
 }
 
-.dot.active {
-  background: #fff;
-}
-
+/* 扫码弹窗 */
 #scanner-overlay {
   display: none;
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.95);
-  z-index: 1000;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.9);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  color: white;
+  align-items: center;
+  justify-content: center;
   flex-direction: column;
 }
 
-#scanner-header {
+#scanner-overlay .scanner-content {
   display: flex;
-  justify-content: flex-end;
-  padding: 10px;
+  flex-direction: column;
+  align-items: center;
 }
 
-#backButton {
-  background: none;
-  color: white;
-  font-size: 30px;
-  border: none;
-}
-
-#qr-reader {
-  margin: 20px auto;
-  width: 80%;
-  height: 50%;
+.scanner-box {
+  width: 80vw;
+  height: 60vw;
+  background: #222;
+  margin-top: 20px;
+  border: 2px dashed #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
