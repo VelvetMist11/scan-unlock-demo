@@ -1,46 +1,36 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="referrer" content="never">
-  <title>竖屏模型滑动展示</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Scan Unlock Demo</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="page" id="page0">
-    <canvas id="canvas0" class="model-canvas"></canvas>
-    <button class="scan-btn" data-index="0">扫码解锁</button>
-  </div>
-  <div class="page" id="page1">
-    <canvas id="canvas1" class="model-canvas"></canvas>
-    <button class="scan-btn" data-index="1">扫码解锁</button>
-  </div>
-  <div class="page" id="page2">
-    <canvas id="canvas2" class="model-canvas"></canvas>
-    <button class="scan-btn" data-index="2">扫码解锁</button>
-  </div>
-  <div class="page" id="page3">
-    <canvas id="canvas3" class="model-canvas"></canvas>
-    <button class="scan-btn" data-index="3">扫码解锁</button>
-  </div>
 
-  <!-- 分页控制 -->
-  <div class="nav-buttons">
-    <button id="prevBtn">◀</button>
-    <button id="nextBtn">▶</button>
-  </div>
+<div id="slider">
+  <section class="page"><canvas id="canvas0"></canvas><button class="scan-btn">扫码解锁</button></section>
+  <section class="page"><canvas id="canvas1"></canvas><button class="scan-btn">扫码解锁</button></section>
+  <section class="page"><canvas id="canvas2"></canvas><button class="scan-btn">扫码解锁</button></section>
+  <section class="page"><canvas id="canvas3"></canvas><button class="scan-btn">扫码解锁</button></section>
+</div>
 
-  <!-- 扫码弹窗 -->
-  <div id="scanner-overlay">
-    <div class="scanner-content">
-      <button id="close-scan">关闭</button>
-      <div class="scanner-box">[扫码区域模拟]</div>
-    </div>
-  </div>
+<div id="pagination">
+  <span class="dot active"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+</div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="script.js"></script>
+<div id="qr-overlay">
+  <div class="scanner-header">
+    <button id="close-scan">‹</button>
+  </div>
+  <div id="qr-reader"></div>
+</div>
+
+<script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/GLTFLoader.js"></script>
 </body>
 </html>
