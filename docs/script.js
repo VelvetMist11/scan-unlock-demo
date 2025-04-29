@@ -1,86 +1,80 @@
-const pages = document.querySelectorAll('.page');
-const totalPages = pages.length;
-let currentIndex = 0;
-
-function goToPage(index) {
-  const slider = document.getElementById('slider');
-  slider.style.transform = `translateX(-${index * 100}vw)`;
-  updateDots(index);
+/* 核心布局 */
+#slider-container {
+  display: flex;
+  width: 400vw;
+  height: 100vh;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-function updateDots(index) {
-  document.querySelectorAll('.dot').forEach((dot, i) => {
-    dot.classList.toggle('active', i === index);
-  });
+.page {
+  width: 100vw;
+  height: 100vh;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-// 监听滑动
-let startX = 0;
-let isMoving = false;
-
-document.addEventListener('touchstart', e => {
-  startX = e.touches[0].clientX;
-  isMoving = true;
-});
-
-document.addEventListener('touchend', e => {
-  if (!isMoving) return;
-  isMoving = false;
-  const deltaX = e.changedTouches[0].clientX - startX;
-
-  if (deltaX < -50) {
-    currentIndex = Math.min(currentIndex + 1, totalPages - 1);
-  } else if (deltaX > 50) {
-    currentIndex = Math.max(currentIndex - 1, 0);
-  }
-  goToPage(currentIndex);
-});
-
-// 加载模型
-const modelPaths = [
-  'models/model0.glb',
-  'models/model1.glb',
-  'models/model2.glb',
-  'models/model3.glb'
-];
-
-modelPaths.forEach((path, i) => {
-  initThreeJS(`canvas${i}`, path);
-});
-
-function initThreeJS(canvasId, modelPath) {
-  const canvas = document.getElementById(canvasId);
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(window.devicePixelRatio);
-
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.z = 5;
-
-  const light = new THREE.DirectionalLight(0xffffff, 1);
-  light.position.set(5,5,5);
-  scene.add(light);
-
-  const loader = new THREE.GLTFLoader();
-  loader.load(modelPath, gltf => {
-    scene.add(gltf.scene);
-  });
-
-  function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
-  }
-  animate();
+.canvas-wrapper {
+  width: 100%;
+  height: 80vh;
+  position: relative;
+  overflow: hidden;
 }
 
-// 扫码按钮事件（暂时模拟）
-document.querySelectorAll('.scan-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.getElementById('qr-overlay').style.display = 'flex';
-  });
-});
+.model-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+}
 
-document.getElementById('close-scan').addEventListener('click', () => {
-  document.getElementById('qr-overlay').style.display = 'none';
-});
+/* 扫码按钮精准定位 */
+.scan-btn {
+  position: absolute;
+  bottom: 10vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.scan-icon {
+  width: 24px;
+  height: 24px;
+  fill: #333;
+}
+
+/* 分页指示器优化 */
+#pagination {
+  position: fixed;
+  bottom: 5vh;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  background: rgba(0,0,0,0.3);
+  padding: 8px 16px;
+  border-radius: 20px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dot.active {
+  background: #fff;
+  width: 24px;
+  border-radius: 4px;
+}
