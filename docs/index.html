@@ -1,36 +1,26 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Scan Unlock Demo</title>
-  <link rel="stylesheet" href="style.css">
-</head>
 <body>
-
-<div id="slider">
-  <section class="page"><canvas id="canvas0"></canvas><button class="scan-btn">扫码解锁</button></section>
-  <section class="page"><canvas id="canvas1"></canvas><button class="scan-btn">扫码解锁</button></section>
-  <section class="page"><canvas id="canvas2"></canvas><button class="scan-btn">扫码解锁</button></section>
-  <section class="page"><canvas id="canvas3"></canvas><button class="scan-btn">扫码解锁</button></section>
-</div>
-
-<div id="pagination">
-  <span class="dot active"></span>
-  <span class="dot"></span>
-  <span class="dot"></span>
-  <span class="dot"></span>
-</div>
-
-<div id="qr-overlay">
-  <div class="scanner-header">
-    <button id="close-scan">‹</button>
+  <!-- 滑动容器 -->
+  <div id="slider-container">
+    <!-- 每个页面独立容器 -->
+    <div class="page" data-index="0">
+      <div class="canvas-wrapper">
+        <canvas class="model-canvas" id="model0"></canvas>
+      </div>
+      <button class="scan-btn" data-target="0">
+        <svg class="scan-icon" viewBox="0 0 24 24"><path d="M4 4h4v2H4zm12 0h4v2h-4zM4 20h4v2H4zm12 0h4v2h-4zM2 8h2v8H2zm18 0h2v8h-2zM6 6h12v12H6z"/></svg>
+      </button>
+    </div>
+    <!-- 重复其他3个页面结构 -->
   </div>
-  <div id="qr-reader"></div>
-</div>
 
-<script src="script.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/GLTFLoader.js"></script>
+  <!-- 分页指示器 -->
+  <div id="pagination">
+    <span class="dot active"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+  </div>
+
+  <!-- 扫码界面 -->
+  <div id="qr-overlay"></div>
 </body>
-</html>
