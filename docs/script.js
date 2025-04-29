@@ -1,80 +1,99 @@
-/* 核心布局 */
-#slider-container {
-  display: flex;
-  width: 400vw;
-  height: 100vh;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+class PageSlider {
+  constructor() {
+    this.slider = document.getElementById('slider-container')
+    this.pages = Array.from(document.querySelectorAll('.page'))
+    this.currentIndex = 0
+    this.touchStartX = 0
+    this.isDragging = false
+    
+    // 事件绑定
+    this.initTouchEvents()
+    this.initModels()
+  }
+
+  initTouchEvents() {
+    document.addEventListener('touchstart', e => {
+      this.touchStartX = e.touches[0].clientX
+      this.isDragging = true
+      this.slider.style.transition = 'none' // 拖动时禁用动画
+    })
+
+    document.addEventListener('touchmove', e => {
+      if (!this.isDragging) return
+      const deltaX = e.touches[0].clientX - this.touchStartX
+      this.slider.style.transform = `translateX(calc(-${this.currentIndex * 100}vw + ${deltaX}px))`
+    })
+
+    document.addEventListener('touchend', e => {
+      if (!this.isDragging) return
+      this.isDragging = false
+      this.slider.style.transition = '' // 恢复动画
+
+      const deltaX = e.changedTouches[0].clientX - this.touchStartX
+      const threshold = window.innerWidth * 0.15 // 15%滑动阈值
+
+      if (Math.abs(deltaX) > threshold) {
+        this.currentIndex += deltaX > 0 ? -1 : 1
+        this.currentIndex = Math.max(0, Math.min(this.currentIndex, this.pages.length - 1))
+      }
+      
+      this.updateSlider()
+    })
+  }
+
+  updateSlider() {
+    this.slider.style.transform = `translateX(-${this.currentIndex * 100}vw)`
+    document.querySelectorAll('.dot').forEach((dot, index) => {
+      dot.classList.toggle('active', index === this.currentIndex)
+    })
+  }
+
+  initModels() {
+    this.pages.forEach((page, index) => {
+      const canvas = page.querySelector('.model-canvas')
+      this.initThreeJS(canvas, `models/model${index}.glb`)
+    })
+  }
+
+  initThreeJS(canvas, modelPath) {
+    const renderer = new THREE.WebGLRenderer({ 
+      canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference: "high-performance"
+    })
+    
+    // 尺寸适配逻辑
+    const resize = () => {
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight)
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    }
+    window.addEventListener('resize', resize)
+    resize()
+
+    // 模型加载逻辑
+    new THREE.GLTFLoader().load(modelPath, gltf => {
+      const scene = new THREE.Scene()
+      const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 1000)
+      camera.position.z = 5
+      scene.add(gltf.scene)
+
+      // 自动居中模型
+      const box = new THREE.Box3().setFromObject(gltf.scene)
+      const center = box.getCenter(new THREE.Vector3())
+      gltf.scene.position.sub(center)
+
+      // 渲染循环
+      const animate = () => {
+        requestAnimationFrame(animate)
+        renderer.render(scene, camera)
+      }
+      animate()
+    }, undefined, err => {
+      console.error(`模型加载失败: ${modelPath}`, err)
+    })
+  }
 }
 
-.page {
-  width: 100vw;
-  height: 100vh;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.canvas-wrapper {
-  width: 100%;
-  height: 80vh;
-  position: relative;
-  overflow: hidden;
-}
-
-.model-canvas {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: contain;
-}
-
-/* 扫码按钮精准定位 */
-.scan-btn {
-  position: absolute;
-  bottom: 10vh;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 56px;
-  height: 56px;
-  border-radius: 28px;
-  background: rgba(255,255,255,0.9);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-}
-
-.scan-icon {
-  width: 24px;
-  height: 24px;
-  fill: #333;
-}
-
-/* 分页指示器优化 */
-#pagination {
-  position: fixed;
-  bottom: 5vh;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 10px;
-  background: rgba(0,0,0,0.3);
-  padding: 8px 16px;
-  border-radius: 20px;
-}
-
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.5);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.dot.active {
-  background: #fff;
-  width: 24px;
-  border-radius: 4px;
-}
+// 初始化
+new PageSlider()
