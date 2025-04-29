@@ -1,43 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="referrer" content="never">
+  <title>竖屏模型滑动展示</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
 <body>
-  <!-- 滑动容器 -->
-  <div id="slider-container">
-    <div class="slide">
-      <canvas id="modelCanvas0" class="model-canvas"></canvas>
-      <button class="scan-btn" data-target="0">扫码解锁</button>
-    </div>
-    <div class="slide">
-      <canvas id="modelCanvas1" class="model-canvas"></canvas>
-      <button class="scan-btn" data-target="1">扫码解锁</button>
-    </div>
-    <div class="slide">
-      <canvas id="modelCanvas2" class="model-canvas"></canvas>
-      <button class="scan-btn" data-target="2">扫码解锁</button>
-    </div>
-    <div class="slide">
-      <canvas id="modelCanvas3" class="model-canvas"></canvas>
-      <button class="scan-btn" data-target="3">扫码解锁</button>
-    </div>
+  <div class="page" id="page0">
+    <canvas id="canvas0" class="model-canvas"></canvas>
+    <button class="scan-btn" data-index="0">扫码解锁</button>
+  </div>
+  <div class="page" id="page1">
+    <canvas id="canvas1" class="model-canvas"></canvas>
+    <button class="scan-btn" data-index="1">扫码解锁</button>
+  </div>
+  <div class="page" id="page2">
+    <canvas id="canvas2" class="model-canvas"></canvas>
+    <button class="scan-btn" data-index="2">扫码解锁</button>
+  </div>
+  <div class="page" id="page3">
+    <canvas id="canvas3" class="model-canvas"></canvas>
+    <button class="scan-btn" data-index="3">扫码解锁</button>
   </div>
 
-  <!-- 分页指示器 -->
-  <div id="pagination">
-    <span class="dot active"></span>
-    <span class="dot"></span>
-    <span class="dot"></span>
-    <span class="dot"></span>
+  <!-- 分页控制 -->
+  <div class="nav-buttons">
+    <button id="prevBtn">◀</button>
+    <button id="nextBtn">▶</button>
   </div>
 
-  <!-- 扫码界面 -->
+  <!-- 扫码弹窗 -->
   <div id="scanner-overlay">
-    <div id="scanner-header">
-      <button id="backButton">×</button>
+    <div class="scanner-content">
+      <button id="close-scan">关闭</button>
+      <div class="scanner-box">[扫码区域模拟]</div>
     </div>
-    <div id="qr-reader"></div>
   </div>
 
-  <!-- 脚本 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="https://unpkg.com/html5-qrcode@2.2.1/minified/html5-qrcode.min.js"></script>
-  <script src="main.js"></script>
+  <script src="script.js"></script>
 </body>
+</html>
