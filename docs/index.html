@@ -29,8 +29,10 @@
   <div id="qr-reader"></div>
 </div>
 
-<script src="script.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/GLTFLoader.js"></script>
+<!-- 注意：顺序不能错！ -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/GLTFLoader.js" defer></script>
+<script src="script.js" defer></script>
+
 </body>
 </html>
