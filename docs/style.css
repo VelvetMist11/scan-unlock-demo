@@ -1,17 +1,17 @@
 /* 横向多页容器 */
 #slider {
   display: flex;
-  width: 400vw; 
+  width: 400vw; /* 四页 */
   height: 100vh;
   transition: transform 0.5s ease;
   overflow: hidden;
 }
 
-/* 每一页全屏 (关键修复) */
+/* 每一页全屏 */
 .page {
   width: 100vw;
   height: 100vh;
-  position: relative; /* 必须保留！保证子元素定位基准 */
+  position: relative;
   flex-shrink: 0;
 }
 
@@ -21,11 +21,9 @@ canvas {
   height: 100%;
   display: block;
   background: #000;
-  position: relative; /* 新增层级控制 */
-  z-index: 1; /* 确保在按钮下方 */
 }
 
-/* 扫码按钮样式 (关键修复) */
+/* 扫码按钮样式 */
 .scan-btn {
   position: absolute;
   bottom: 20vh;
@@ -37,10 +35,8 @@ canvas {
   border: none;
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  z-index: 10; /* 必须高于 canvas 的 z-index */
+  z-index: 10;
   font-weight: bold;
-  /* 新增防穿透属性 */
-  pointer-events: auto; 
 }
 
 /* 分页指示器 */
@@ -51,7 +47,53 @@ canvas {
   transform: translateX(-50%);
   display: flex;
   gap: 10px;
-  z-index: 20; /* 高于按钮 */
+  z-index: 20;
 }
 
-/* 其他样式保持不变... */
+.dot {
+  width: 10px;
+  height: 10px;
+  background: #bbb;
+  border-radius: 50%;
+  transition: background 0.3s;
+}
+
+.dot.active {
+  background: #333;
+}
+
+/* 扫码弹窗 */
+#qr-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.96);
+  z-index: 999;
+  display: none;
+  flex-direction: column;
+}
+
+.scanner-header {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+}
+
+#close-scan {
+  font-size: 30px;
+  color: white;
+  background: none;
+  border: none;
+}
+
+#qr-reader {
+  margin: 10vh auto;
+  width: 80vw;
+  max-width: 400px;
+  height: 400px;
+  background: white;
+  border-radius: 12px;
+}”
