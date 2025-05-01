@@ -1,90 +1,131 @@
-const pages = document.querySelectorAll('.page');
-const totalPages = pages.length;
-let currentIndex = 0;
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js';
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/loaders/GLTFLoader.js';
 
-// 跳转页面
-function goToPage(index) {
-  const slider = document.getElementById('slider');
-  slider.style.transform = `translateX(-${index * 100}vw)`;
-  updateDots(index);
-}
+class SliderController {
+  constructor(container, pages, indicator, qrButtons, qrContainers) {
+    this.container = container;
+    this.pages = pages;
+    this.indicator = indicator;
+    this.qrButtons = qrButtons;
+    this.qrContainers = qrContainers;
+    this.currentIndex = 0;
+    this.totalPages = this.pages.children.length;
+    this.startX = 0;
+    this.currentX = 0;
+    this.isDragging = false;
 
-function updateDots(index) {
-  document.querySelectorAll('.dot').forEach((dot, i) => {
-    dot.classList.toggle('active', i === index);
-  });
-}
-
-// 滑动监听
-let startX = 0;
-let isMoving = false;
-
-document.addEventListener('touchstart', e => {
-  startX = e.touches[0].clientX;
-  isMoving = true;
-});
-
-document.addEventListener('touchend', e => {
-  if (!isMoving) return;
-  isMoving = false;
-  const deltaX = e.changedTouches[0].clientX - startX;
-
-  if (deltaX < -50) {
-    currentIndex = Math.min(currentIndex + 1, totalPages - 1);
-  } else if (deltaX > 50) {
-    currentIndex = Math.max(currentIndex - 1, 0);
-  }
-  goToPage(currentIndex);
-});
-
-// 模型路径数组
-const modelPaths = [
-  'models/model0.glb',
-  'models/model1.glb',
-  'models/model2.glb',
-  'models/model3.glb'
-];
-
-// 初始化每个画布
-modelPaths.forEach((path, i) => {
-  initThreeJS(`canvas${i}`, path);
-});
-
-function initThreeJS(canvasId, modelPath) {
-  const canvas = document.getElementById(canvasId);
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(window.devicePixelRatio);
-
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.z = 5;
-
-  const light = new THREE.DirectionalLight(0xffffff, 1);
-  light.position.set(3, 5, 5);
-  scene.add(light);
-
-  const loader = new THREE.GLTFLoader();
-  loader.load(modelPath, gltf => {
-    scene.add(gltf.scene);
-  });
-
-  function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+    this.init();
   }
 
-  animate();
+  init() {
+    this.container.addEventListener('touchstart', this.touchStart.bind(this));
+    this.container.addEventListener('touchmove', this.touchMove.bind(this));
+    this.container.addEventListener('touchend', this.touchEnd.bind(this));
+    this.updateView();
+
+    this.qrButtons.forEach((btn, index) => {
+      btn.addEventListener('click', () => {
+        this.qrContainers[index].style.display = 'block';
+      });
+    });
+
+    this.qrContainers.forEach(container => {
+      container.querySelector('.close-btn').addEventListener('click', () => {
+        container.style.display = 'none';
+      });
+    });
+  }
+
+  touchStart(e) {
+    this.startX = e.touches[0].clientX;
+    this.isDragging = true;
+  }
+
+  touchMove(e) {
+    if (!this.isDragging) return;
+    this.currentX = e.touches[0].clientX;
+  }
+
+  touchEnd(e) {
+    if (!this.isDragging) return;
+    const dx = this.currentX - this.startX;
+    if (Math.abs(dx) > 50) {
+      if (dx < 0) {
+        this.nextPage();
+      } else {
+        this.prevPage();
+      }
+    }
+    this.isDragging = false;
+  }
+
+  nextPage() {
+    if (this.currentIndex < this.totalPages - 1) {
+      this.currentIndex++;
+      this.updateView();
+    }
+  }
+
+  prevPage() {
+    if (this.currentIndex > 0) {
+      this.currentIndex--;
+      this.updateView();
+    }
+  }
+
+  updateView() {
+    const offset = -this.currentIndex * 100;
+    this.pages.style.transform = `translateX(${offset}vw)`;
+    this.indicator.textContent = `${this.currentIndex + 1} / ${this.totalPages}`;
+  }
 }
 
-// 扫码按钮打开
-document.querySelectorAll('.scan-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.getElementById('qr-overlay').style.display = 'flex';
-  });
-});
+class ModelViewer {
+  constructor(canvas, modelPath) {
+    this.canvas = canvas;
+    this.modelPath = modelPath;
+    this.init();
+  }
 
-// 关闭扫码界面
-document.getElementById('close-scan').addEventListener('click', () => {
-  document.getElementById('qr-overlay').style.display = 'none';
+  init() {
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(75, this.canvas.clientWidth / this.canvas.clientHeight, 0.1, 1000);
+    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, alpha: true });
+    this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight);
+
+    const light = new THREE.AmbientLight(0xffffff, 1);
+    this.scene.add(light);
+
+    const loader = new GLTFLoader();
+    loader.load(this.modelPath, (gltf) => {
+      const model = gltf.scene;
+      this.scene.add(model);
+      model.position.set(0, 0, 0);
+      model.rotation.y = Math.PI;
+      this.camera.position.set(0, 1.5, 3);
+      this.animate();
+    });
+  }
+
+  animate() {
+    requestAnimationFrame(this.animate.bind(this));
+    this.renderer.render(this.scene, this.camera);
+  }
+}
+
+// 初始化逻辑
+window.addEventListener('DOMContentLoaded', () => {
+  const container = document.querySelector('.container');
+  const pages = document.querySelector('.pages');
+  const indicator = document.querySelector('.page-indicator');
+  const qrButtons = document.querySelectorAll('.qr-button');
+  const qrContainers = document.querySelectorAll('.qr-container');
+
+  new SliderController(container, pages, indicator, qrButtons, qrContainers);
+
+  const canvasList = document.querySelectorAll('canvas');
+  const modelPaths = ['models/model0.glb', 'models/model1.glb', 'models/model2.glb'];
+  canvasList.forEach((canvas, index) => {
+    new ModelViewer(canvas, modelPaths[index]);
+  });
 });
