@@ -1,131 +1,138 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js';
-import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/loaders/GLTFLoader.js';
-
 class SliderController {
-  constructor(container, pages, indicator, qrButtons, qrContainers) {
-    this.container = container;
-    this.pages = pages;
-    this.indicator = indicator;
-    this.qrButtons = qrButtons;
-    this.qrContainers = qrContainers;
-    this.currentIndex = 0;
-    this.totalPages = this.pages.children.length;
-    this.startX = 0;
-    this.currentX = 0;
-    this.isDragging = false;
-
-    this.init();
-  }
-
-  init() {
-    this.container.addEventListener('touchstart', this.touchStart.bind(this));
-    this.container.addEventListener('touchmove', this.touchMove.bind(this));
-    this.container.addEventListener('touchend', this.touchEnd.bind(this));
-    this.updateView();
-
-    this.qrButtons.forEach((btn, index) => {
-      btn.addEventListener('click', () => {
-        this.qrContainers[index].style.display = 'block';
-      });
-    });
-
-    this.qrContainers.forEach(container => {
-      container.querySelector('.close-btn').addEventListener('click', () => {
-        container.style.display = 'none';
-      });
-    });
-  }
-
-  touchStart(e) {
-    this.startX = e.touches[0].clientX;
-    this.isDragging = true;
-  }
-
-  touchMove(e) {
-    if (!this.isDragging) return;
-    this.currentX = e.touches[0].clientX;
-  }
-
-  touchEnd(e) {
-    if (!this.isDragging) return;
-    const dx = this.currentX - this.startX;
-    if (Math.abs(dx) > 50) {
-      if (dx < 0) {
-        this.nextPage();
-      } else {
-        this.prevPage();
-      }
+    constructor() {
+        this.slider = document.getElementById('slider-container');
+        this.pages = document.querySelectorAll('.page');
+        this.currentIndex = 0;
+        this.startX = 0;
+        this.isDragging = false;
+        
+        this.initEventListeners();
+        this.initThreeJS();
     }
-    this.isDragging = false;
-  }
 
-  nextPage() {
-    if (this.currentIndex < this.totalPages - 1) {
-      this.currentIndex++;
-      this.updateView();
+    initEventListeners() {
+        // 触摸事件
+        document.addEventListener('touchstart', this.handleTouchStart.bind(this));
+        document.addEventListener('touchmove', this.handleTouchMove.bind(this));
+        document.addEventListener('touchend', this.handleTouchEnd.bind(this));
+        
+        // 扫码按钮
+        document.querySelectorAll('.scan-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('qr-overlay').style.display = 'flex';
+            });
+        });
+
+        // 关闭扫码
+        document.getElementById('close-scan').addEventListener('click', () => {
+            document.getElementById('qr-overlay').style.display = 'none';
+        });
     }
-  }
 
-  prevPage() {
-    if (this.currentIndex > 0) {
-      this.currentIndex--;
-      this.updateView();
+    handleTouchStart(e) {
+        this.startX = e.touches[0].clientX;
+        this.isDragging = true;
+        this.slider.style.transition = 'none';
     }
-  }
 
-  updateView() {
-    const offset = -this.currentIndex * 100;
-    this.pages.style.transform = `translateX(${offset}vw)`;
-    this.indicator.textContent = `${this.currentIndex + 1} / ${this.totalPages}`;
-  }
+    handleTouchMove(e) {
+        if (!this.isDragging) return;
+        
+        const currentX = e.touches[0].clientX;
+        const deltaX = currentX - this.startX;
+        
+        // 实时拖动效果
+        this.slider.style.transform = `translateX(calc(-${this.currentIndex * 100}vw + ${deltaX}px))`;
+        e.preventDefault();
+    }
+
+    handleTouchEnd(e) {
+        if (!this.isDragging) return;
+        this.isDragging = false;
+        
+        const deltaX = e.changedTouches[0].clientX - this.startX;
+        const threshold = window.innerWidth * 0.15; // 15%滑动阈值
+
+        if (Math.abs(deltaX) > threshold) {
+            this.currentIndex += deltaX > 0 ? -1 : 1;
+            this.currentIndex = Math.max(0, Math.min(this.currentIndex, this.pages.length - 1));
+        }
+        
+        this.updateSlider();
+    }
+
+    updateSlider() {
+        this.slider.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        this.slider.style.transform = `translateX(-${this.currentIndex * 100}vw)`;
+        
+        // 更新分页指示器
+        document.querySelectorAll('.dot').forEach((dot, index) => {
+            dot.classList.toggle('active', index === this.currentIndex);
+        });
+    }
+
+    initThreeJS() {
+        const modelPaths = [
+            'models/model0.glb',
+            'models/model1.glb',
+            'models/model2.glb',
+            'models/model3.glb'
+        ];
+
+        modelPaths.forEach((path, index) => {
+            const canvas = document.getElementById(`model${index}`);
+            if (!canvas) return;
+
+            const renderer = new THREE.WebGLRenderer({
+                canvas,
+                antialias: true,
+                alpha: true,
+                powerPreference: "high-performance"
+            });
+            
+            // 尺寸适配
+            const resize = () => {
+                renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            };
+            window.addEventListener('resize', resize);
+            resize();
+
+            // 模型加载
+            new THREE.GLTFLoader().load(path, (gltf) => {
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(
+                    45,
+                    canvas.clientWidth / canvas.clientHeight,
+                    0.1,
+                    1000
+                );
+                
+                // 自动居中模型
+                const box = new THREE.Box3().setFromObject(gltf.scene);
+                const center = box.getCenter(new THREE.Vector3());
+                gltf.scene.position.sub(center);
+                
+                // 调整相机位置
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                camera.position.z = maxDim * 2;
+                
+                scene.add(gltf.scene);
+                scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+
+                // 渲染循环
+                const animate = () => {
+                    requestAnimationFrame(animate);
+                    renderer.render(scene, camera);
+                };
+                animate();
+            }, undefined, (err) => {
+                console.error(`模型加载失败: ${path}`, err);
+            });
+        });
+    }
 }
 
-class ModelViewer {
-  constructor(canvas, modelPath) {
-    this.canvas = canvas;
-    this.modelPath = modelPath;
-    this.init();
-  }
-
-  init() {
-    this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(75, this.canvas.clientWidth / this.canvas.clientHeight, 0.1, 1000);
-    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, alpha: true });
-    this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight);
-
-    const light = new THREE.AmbientLight(0xffffff, 1);
-    this.scene.add(light);
-
-    const loader = new GLTFLoader();
-    loader.load(this.modelPath, (gltf) => {
-      const model = gltf.scene;
-      this.scene.add(model);
-      model.position.set(0, 0, 0);
-      model.rotation.y = Math.PI;
-      this.camera.position.set(0, 1.5, 3);
-      this.animate();
-    });
-  }
-
-  animate() {
-    requestAnimationFrame(this.animate.bind(this));
-    this.renderer.render(this.scene, this.camera);
-  }
-}
-
-// 初始化逻辑
-window.addEventListener('DOMContentLoaded', () => {
-  const container = document.querySelector('.container');
-  const pages = document.querySelector('.pages');
-  const indicator = document.querySelector('.page-indicator');
-  const qrButtons = document.querySelectorAll('.qr-button');
-  const qrContainers = document.querySelectorAll('.qr-container');
-
-  new SliderController(container, pages, indicator, qrButtons, qrContainers);
-
-  const canvasList = document.querySelectorAll('canvas');
-  const modelPaths = ['models/model0.glb', 'models/model1.glb', 'models/model2.glb'];
-  canvasList.forEach((canvas, index) => {
-    new ModelViewer(canvas, modelPaths[index]);
-  });
-});
+// 初始化
+new SliderController();
