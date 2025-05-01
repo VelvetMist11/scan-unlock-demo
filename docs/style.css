@@ -1,83 +1,100 @@
-body, html {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  height: 100%;
-  background-color: #000;
-  font-family: Arial, sans-serif;
+/* 全局重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    touch-action: pan-y;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.container {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  overflow: hidden;
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
 }
 
-.pages {
-  display: flex;
-  transition: transform 0.5s ease-in-out;
-  width: 300%;
-  height: 100%;
+/* 滑动容器 */
+#slider-container {
+    display: flex;
+    width: 400vw;
+    height: 100vh;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* 单页布局 */
 .page {
-  width: 100vw;
-  height: 100%;
-  flex-shrink: 0;
-  position: relative;
+    width: 100vw;
+    height: 100vh;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Canvas容器 */
+.canvas-container {
+    width: 100%;
+    height: 80vh;
+    position: relative;
+    overflow: hidden;
 }
 
 canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
 }
 
-.qr-button {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 10px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-  z-index: 10;
-  font-weight: bold;
+/* 扫码按钮 */
+.scan-btn {
+    position: absolute;
+    bottom: 10vh;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 56px;
+    height: 56px;
+    border-radius: 28px;
+    background: rgba(255,255,255,0.9);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    border: none;
 }
 
-.qr-container {
-  display: none;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(255, 255, 255, 0.95);
-  padding: 30px;
-  border-radius: 15px;
-  z-index: 20;
-  text-align: center;
+.scan-icon {
+    width: 24px;
+    height: 24px;
+    fill: #333;
 }
 
-.qr-container img {
-  width: 150px;
-  height: 150px;
-  margin-bottom: 15px;
+/* 分页指示器 */
+#pagination {
+    position: fixed;
+    bottom: 5vh;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    z-index: 100;
+    background: rgba(0,0,0,0.3);
+    padding: 8px 16px;
+    border-radius: 20px;
 }
 
-.qr-container .close-btn {
-  margin-top: 10px;
-  cursor: pointer;
-  color: #333;
-  font-size: 16px;
-  font-weight: bold;
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.page-indicator {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  color: white;
-  font-size: 18px;
-  z-index: 10;
+.dot.active {
+    background: #fff;
+    width: 24px;
+    border-radius: 4px;
 }
