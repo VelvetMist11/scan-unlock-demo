@@ -1,46 +1,40 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#000000">
-    <title>全屏3D互动画廊</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- 微信浏览器兼容处理 -->
-    <meta name="referrer" content="no-referrer">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#000000">
+  <title>Scan Unlock Demo</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.ico">
 </head>
 <body>
-    <div id="slider-container">
-        <div class="page">
-            <div class="canvas-container">
-                <canvas id="model0"></canvas>
-            </div>
-            <button class="scan-btn" data-target="0">
-                <svg class="scan-icon" viewBox="0 0 24 24">
-                    <path d="M4 4h4v2H4zm12 0h4v2h-4zM4 20h4v2H4zm12 0h4v2h-4zM2 8h2v8H2zm18 0h2v8h-2zM6 6h12v12H6z"/>
-                </svg>
-            </button>
-        </div>
-        <!-- 重复其他3个页面 -->
-    </div>
 
-    <div id="pagination">
-        <span class="dot active"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-    </div>
+<div id="slider">
+  <section class="page"><canvas id="canvas0"></canvas><button class="scan-btn">扫码解锁</button></section>
+  <section class="page"><canvas id="canvas1"></canvas><button class="scan-btn">扫码解锁</button></section>
+  <section class="page"><canvas id="canvas2"></canvas><button class="scan-btn">扫码解锁</button></section>
+  <section class="page"><canvas id="canvas3"></canvas><button class="scan-btn">扫码解锁</button></section>
+</div>
 
-    <div id="qr-overlay">
-        <div class="scanner-header">
-            <button id="close-scan">‹</button>
-        </div>
-        <div id="qr-reader"></div>
-    </div>
+<div id="pagination">
+  <span class="dot active"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="script.js"></script>
+<div id="qr-overlay">
+  <div class="scanner-header">
+    <button id="close-scan">‹</button>
+  </div>
+  <div id="qr-reader"></div>
+</div>
+
+<!-- 脚本顺序非常重要！不要用 defer -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/GLTFLoader.js"></script>
+<script src="script.js"></script>
+
 </body>
 </html>
