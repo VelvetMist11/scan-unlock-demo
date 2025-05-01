@@ -1,90 +1,94 @@
-const pages = document.querySelectorAll('.page'); 
-const totalPages = pages.length;
-let currentIndex = 0;
+class PageSlider {
+  constructor() {
+    this.slider = document.getElementById('slider-container');
+    this.pages = Array.from(document.querySelectorAll('.page'));
+    this.currentIndex = 0;
+    this.touchStartX = 0;
+    this.isDragging = false;
 
-// 跳转页面
-function goToPage(index) {
-  const slider = document.getElementById('slider');
-  slider.style.transform = translateX(-${index * 100}vw);
-  updateDots(index);
-}
-
-function updateDots(index) {
-  document.querySelectorAll('.dot').forEach((dot, i) => {
-    dot.classList.toggle('active', i === index);
-  });
-}
-
-// 滑动监听
-let startX = 0;
-let isMoving = false;
-
-document.addEventListener('touchstart', e => {
-  startX = e.touches[0].clientX;
-  isMoving = true;
-});
-
-document.addEventListener('touchend', e => {
-  if (!isMoving) return;
-  isMoving = false;
-  const deltaX = e.changedTouches[0].clientX - startX;
-
-  if (deltaX < -50) {
-    currentIndex = Math.min(currentIndex + 1, totalPages - 1);
-  } else if (deltaX > 50) {
-    currentIndex = Math.max(currentIndex - 1, 0);
-  }
-  goToPage(currentIndex);
-});
-
-// 模型路径数组
-const modelPaths = [
-  'models/model0.glb',
-  'models/model1.glb',
-  'models/model2.glb',
-  'models/model3.glb'
-];
-
-// 初始化每个画布
-modelPaths.forEach((path, i) => {
-  initThreeJS(canvas${i}, path);
-});
-
-function initThreeJS(canvasId, modelPath) {
-  const canvas = document.getElementById(canvasId);
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(window.devicePixelRatio);
-
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.z = 5;
-
-  const light = new THREE.DirectionalLight(0xffffff, 1);
-  light.position.set(3, 5, 5);
-  scene.add(light);
-
-  const loader = new THREE.GLTFLoader();
-  loader.load(modelPath, gltf => {
-    scene.add(gltf.scene);
-  });
-
-  function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+    this.initTouchEvents();
+    this.initModels();
   }
 
-  animate();
+  initTouchEvents() {
+    document.addEventListener('touchstart', e => {
+      this.touchStartX = e.touches[0].clientX;
+      this.isDragging = true;
+      this.slider.style.transition = 'none';
+    });
+
+    document.addEventListener('touchmove', e => {
+      if (!this.isDragging) return;
+      const deltaX = e.touches[0].clientX - this.touchStartX;
+      this.slider.style.transform = `translateX(calc(-${this.currentIndex * 100}vw + ${deltaX}px))`;
+    });
+
+    document.addEventListener('touchend', e => {
+      if (!this.isDragging) return;
+      this.isDragging = false;
+      this.slider.style.transition = '';
+
+      const deltaX = e.changedTouches[0].clientX - this.touchStartX;
+      const threshold = window.innerWidth * 0.15;
+
+      if (Math.abs(deltaX) > threshold) {
+        this.currentIndex += deltaX > 0 ? -1 : 1;
+        this.currentIndex = Math.max(0, Math.min(this.currentIndex, this.pages.length - 1));
+      }
+
+      this.updateSlider();
+    });
+  }
+
+  updateSlider() {
+    this.slider.style.transform = `translateX(-${this.currentIndex * 100}vw)`;
+    document.querySelectorAll('.dot').forEach((dot, index) => {
+      dot.classList.toggle('active', index === this.currentIndex);
+    });
+  }
+
+  initModels() {
+    this.pages.forEach((page, index) => {
+      const canvas = page.querySelector('.model-canvas');
+      this.initThreeJS(canvas, `models/model${index}.glb`);
+    });
+  }
+
+  initThreeJS(canvas, modelPath) {
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference: 'high-performance'
+    });
+
+    const resize = () => {
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    };
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    new THREE.GLTFLoader().load(modelPath, gltf => {
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+      camera.position.z = 5;
+      scene.add(gltf.scene);
+
+      const box = new THREE.Box3().setFromObject(gltf.scene);
+      const center = box.getCenter(new THREE.Vector3());
+      gltf.scene.position.sub(center);
+
+      const animate = () => {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+      };
+      animate();
+    }, undefined, err => {
+      console.error(`模型加载失败: ${modelPath}`, err);
+    });
+  }
 }
 
-// 扫码按钮打开
-document.querySelectorAll('.scan-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.getElementById('qr-overlay').style.display = 'flex';
-  });
-});
-
-// 关闭扫码界面
-document.getElementById('close-scan').addEventListener('click', () => {
-  document.getElementById('qr-overlay').style.display = 'none';
-}); 
+new PageSlider();
