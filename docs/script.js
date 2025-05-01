@@ -5,7 +5,7 @@ let currentIndex = 0;
 // 跳转页面
 function goToPage(index) {
   const slider = document.getElementById('slider');
-  slider.style.transform = `translateX(-${index * 100}vw)`;
+  slider.style.transform = translateX(-${index * 100}vw);
   updateDots(index);
 }
 
@@ -47,7 +47,7 @@ const modelPaths = [
 
 // 初始化每个画布
 modelPaths.forEach((path, i) => {
-  initThreeJS(`canvas${i}`, path);
+  initThreeJS(canvas${i}, path);
 });
 
 function initThreeJS(canvasId, modelPath) {
@@ -71,3 +71,20 @@ function initThreeJS(canvasId, modelPath) {
 
   function animate() {
     requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+  }
+
+  animate();
+}
+
+// 扫码按钮打开
+document.querySelectorAll('.scan-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('qr-overlay').style.display = 'flex';
+  });
+});
+
+// 关闭扫码界面
+document.getElementById('close-scan').addEventListener('click', () => {
+  document.getElementById('qr-overlay').style.display = 'none';
+}); 
