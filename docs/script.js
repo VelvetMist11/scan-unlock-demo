@@ -1,70 +1,73 @@
-class PageSlider {
-  constructor() {
-    this.slider = document.getElementById('slider-container');
-    this.pages  = Array.from(document.querySelectorAll('.page'));
-    this.currentIndex = 0;
-    this.touchStartX = 0;
-    this.isDragging  = false;
+// 1. 翻页控制
+const slider = document.getElementById('slider-container');
+const pages  = document.querySelectorAll('.page');
+let currentIndex = 0;
+let startX = 0, deltaX = 0, dragging = false;
 
-    this.initTouchEvents();
-    this.initModels();
-    this.initScanButtons();
-  }
+function goToPage(idx) {
+  currentIndex = Math.max(0, Math.min(idx, pages.length - 1));
+  slider.style.transform = `translateX(-${currentIndex * 100}vw)`;
+  document.querySelectorAll('.dot').forEach((d,i) =>
+    d.classList.toggle('active', i === currentIndex)
+  );
+}
 
-  initTouchEvents() {
-    document.addEventListener('touchstart', e => {
-      this.touchStartX = e.touches[0].clientX;
-      this.isDragging  = true;
-      // 禁用过渡以获得实时拖动效果
-      this.slider.style.transition = 'none';
-    });
+// 2. 触摸事件
+slider.addEventListener('touchstart', e => {
+  startX = e.touches[0].clientX;
+  dragging = true;
+  slider.style.transition = 'none';
+});
+slider.addEventListener('touchmove', e => {
+  if (!dragging) return;
+  deltaX = e.touches[0].clientX - startX;
+  slider.style.transform = `translateX(calc(-${currentIndex * 100}vw + ${deltaX}px))`;
+  e.preventDefault();  // 禁止系统滚动
+}, { passive:false });
+slider.addEventListener('touchend', e => {
+  dragging = false;
+  slider.style.transition = 'transform 0.3s ease';
+  if (deltaX < -50)  goToPage(currentIndex + 1);
+  else if (deltaX > 50) goToPage(currentIndex - 1);
+  else goToPage(currentIndex);
+  deltaX = 0;
+});
 
-    document.addEventListener('touchmove', e => {
-      if (!this.isDragging) return;
-      // 🔒 阻止系统默认拖动（地图滚动）行为
-      e.preventDefault();
-      let deltaX = e.touches[0].clientX - this.touchStartX;
-      this.slider.style.transform = `translateX(calc(-${this.currentIndex} * 100vw + ${deltaX}px))`;
-    }, {passive:false});
+// 3. Three.js 简易初始化
+function initThreeJS(canvasId, modelPath) {
+  const canvas = document.getElementById(canvasId);
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45,
+      window.innerWidth/window.innerHeight, 0.1, 100
+  );
+  camera.position.z = 5;
+  new THREE.DirectionalLight(0xffffff,1).position.set(1,1,1).addTo(scene);
 
-    document.addEventListener('touchend', e => {
-      if (!this.isDragging) return;
-      this.isDragging = false;
-      // 恢复过渡动画
-      this.slider.style.transition = 'transform 0.3s ease';
+  new THREE.GLTFLoader().load(modelPath, gltf => {
+    scene.add(gltf.scene);
+    animate();
+  });
 
-      let deltaX = e.changedTouches[0].clientX - this.touchStartX;
-      const threshold = window.innerWidth * 0.15;
-      if (deltaX < -threshold)       this.currentIndex = Math.min(this.currentIndex+1, this.pages.length-1);
-      else if (deltaX > threshold)   this.currentIndex = Math.max(this.currentIndex-1, 0);
-
-      this.updateSlider();
-    });
-  }
-
-  updateSlider() {
-    this.slider.style.transform = `translateX(-${this.currentIndex}00vw)`;
-    document.querySelectorAll('.dot')
-      .forEach((d,i) => d.classList.toggle('active', i===this.currentIndex));
-  }
-
-  initModels() {
-    document.querySelectorAll('.model-canvas').forEach((canvas,i) =>
-      initThreeJS(canvas, `models/model${i}.glb`)
-    );
-  }
-
-  initScanButtons() {
-    document.querySelectorAll('.scan-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.getElementById('qr-overlay').style.display = 'flex';
-      });
-    });
-    document.getElementById('close-scan').addEventListener('click', () => {
-      document.getElementById('qr-overlay').style.display = 'none';
-    });
+  function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
   }
 }
 
-// 对应的 Three.js 初始化函数，此处略
-new PageSlider();
+// 4. 扫码弹窗
+document.querySelectorAll('.scan-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('qr-overlay').style.display = 'flex';
+  });
+});
+document.getElementById('close-scan')
+  .addEventListener('click', () => {
+    document.getElementById('qr-overlay').style.display = 'none';
+  });
+
+// 5. 启动：加载模型、初始页
+['canvas0','canvas1','canvas2','canvas3']
+  .forEach((id,i) => initThreeJS(id, `models/model${i}.glb`));
+goToPage(0);
