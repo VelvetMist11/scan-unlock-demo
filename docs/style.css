@@ -1,63 +1,85 @@
-/* 整体隐藏滚动条 */
-body, html { overflow: hidden; background: #000; }
+/* 防止浏览器的默认滚动 */
+html, body {
+  margin: 0; padding: 0;
+  overflow: hidden;
+  width: 100%; height: 100%;
+  background: #000;
+  touch-action: none; /* 禁止所有默认触摸滚动 */
+}
 
-/* 横向多页容器 */
+/* 整体横向容器 */
 #slider-container {
   display: flex;
-  width: 400vw;            /* 四页 */
-  height: 100vh;           
+  width: 400vw;          /* 4 屏 */
+  height: 100vh;
   transition: transform 0.3s ease;
   overflow: hidden;
 }
 
-/* 单页全屏 */
+/* 单页 */
 .page {
-  flex-shrink: 0;
-  width: 100vw;
+  flex: 0 0 100vw;
   height: 100vh;
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
 }
 
-/* Canvas 占满 */
-.canvas-wrapper, .model-canvas {
-  width: 100%; height: 80vh;
-  object-fit: contain;
+/* canvas 全屏 */
+.model-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #111;
 }
 
 /* 扫码按钮 */
 .scan-btn {
   position: absolute;
-  bottom: 10vh;
-  left: 50%; transform: translateX(-50%);
+  bottom: 20vh;
+  left: 50%;
+  transform: translateX(-50%);
   width: 56px; height: 56px;
-  background: rgba(255,255,255,0.9);
+  background: #fff;
+  border: none;
   border-radius: 28px;
-  z-index: 100;
+  z-index: 10;
+  font-size: 12px;
 }
 
 /* 分页指示器 */
 #pagination {
   position: fixed;
-  bottom: 5vh; left: 50%;
+  bottom: 10vh; left: 50%;
   transform: translateX(-50%);
-  display: flex; gap: 10px;
-  background: rgba(0,0,0,0.3);
-  padding: 8px 16px; border-radius: 20px;
-  z-index: 200;
+  display: flex; gap: 8px;
 }
-.dot { width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.5);}
-.dot.active { background:#fff; width:24px; border-radius:4px; }
+
+.dot {
+  width: 8px; height: 8px;
+  background: #555;
+  border-radius: 50%;
+}
+.dot.active { background: #fff; }
 
 /* 扫码弹窗 */
 #qr-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.96);
-  display: none;          /* 默认隐藏 */
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.9);
+  display: none;
   flex-direction: column;
-  z-index: 999;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.scanner-header {
+  position: absolute;
+  top: 10px; left: 10px;
+}
+
+#qr-reader {
+  width: 80vw; max-width: 300px;
+  height: 300px;
+  background: #fff;
 }
