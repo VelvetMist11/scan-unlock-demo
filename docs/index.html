@@ -1,53 +1,55 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-cn">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0,
-                 maximum-scale=1.0, user-scalable=no" />
-  <title>模型滑动展示</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>3D 模型翻页展示</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- 注意：这里 ID 用 slider-container -->
-  <div id="slider-container">
-    <div class="page" data-index="0">
-      <canvas id="canvas0" class="model-canvas"></canvas>
-      <button class="scan-btn" data-target="0">扫码解锁</button>
+  <!-- 滑动容器 -->
+  <div id="slider">
+    <!-- 第1页 -->
+    <div class="page" id="page1">
+      <canvas id="canvas1"></canvas>
+      <button class="scan-btn">扫码</button>
     </div>
-    <div class="page" data-index="1">
-      <canvas id="canvas1" class="model-canvas"></canvas>
-      <button class="scan-btn" data-target="1">扫码解锁</button>
+    <!-- 第2页 -->
+    <div class="page" id="page2">
+      <canvas id="canvas2"></canvas>
+      <button class="scan-btn">扫码</button>
     </div>
-    <div class="page" data-index="2">
-      <canvas id="canvas2" class="model-canvas"></canvas>
-      <button class="scan-btn" data-target="2">扫码解锁</button>
+    <!-- 第3页 -->
+    <div class="page" id="page3">
+      <canvas id="canvas3"></canvas>
+      <button class="scan-btn">扫码</button>
     </div>
-    <div class="page" data-index="3">
-      <canvas id="canvas3" class="model-canvas"></canvas>
-      <button class="scan-btn" data-target="3">扫码解锁</button>
+    <!-- 第4页 -->
+    <div class="page" id="page4">
+      <canvas id="canvas4"></canvas>
+      <button class="scan-btn">扫码</button>
     </div>
   </div>
 
-  <div id="pagination">
+  <!-- 分页指示器 -->
+  <div id="dots">
     <span class="dot active"></span>
     <span class="dot"></span>
     <span class="dot"></span>
     <span class="dot"></span>
   </div>
 
-  <!-- 扫码弹窗 -->
-  <div id="qr-overlay">
-    <div class="scanner-header">
-      <button id="close-scan">×</button>
+  <!-- 二维码遮罩层（初始隐藏） -->
+  <div id="overlay" class="hidden">
+    <div id="overlay-content">
+      <span id="overlay-close">X</span>
+      <img src="qrcode.png" alt="二维码">
     </div>
-    <div id="qr-reader"></div>
   </div>
 
-  <!-- 三个脚本必须按顺序且不要用 defer -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="main.js"></script>
+  <!-- 引入 Three.js 和 GLTFLoader（必须在脚本前加载） -->
+  <script src="three.min.js"></script>
+  <script src="GLTFLoader.js"></script>
+  <!-- 自定义脚本 -->
+  <script src="script.js"></script>
 </body>
 </html>
