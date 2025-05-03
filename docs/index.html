@@ -1,38 +1,53 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <!-- 基本 meta 与 引入样式 -->
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0,
+                 maximum-scale=1.0, user-scalable=no" />
+  <title>模型滑动展示</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- 1. 滑动容器 -->
+
+  <!-- 注意：这里 ID 用 slider-container -->
   <div id="slider-container">
-    <!-- 2. 四屏 .page，每屏一个 canvas + 扫码按钮 -->
     <div class="page" data-index="0">
-      <div class="canvas-wrapper">
-        <canvas class="model-canvas" id="model0"></canvas>
-      </div>
-      <button class="scan-btn" data-target="0">…</button>
+      <canvas id="canvas0" class="model-canvas"></canvas>
+      <button class="scan-btn" data-target="0">扫码解锁</button>
     </div>
-    … 共四个 page …
+    <div class="page" data-index="1">
+      <canvas id="canvas1" class="model-canvas"></canvas>
+      <button class="scan-btn" data-target="1">扫码解锁</button>
+    </div>
+    <div class="page" data-index="2">
+      <canvas id="canvas2" class="model-canvas"></canvas>
+      <button class="scan-btn" data-target="2">扫码解锁</button>
+    </div>
+    <div class="page" data-index="3">
+      <canvas id="canvas3" class="model-canvas"></canvas>
+      <button class="scan-btn" data-target="3">扫码解锁</button>
+    </div>
   </div>
 
-  <!-- 3. 分页指示器 -->
   <div id="pagination">
-    <span class="dot active"></span>… 共四个 dot …
+    <span class="dot active"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
   </div>
 
-  <!-- 4. 扫码弹窗 overlay -->
+  <!-- 扫码弹窗 -->
   <div id="qr-overlay">
     <div class="scanner-header">
-      <button id="close-scan">‹</button>
+      <button id="close-scan">×</button>
     </div>
     <div id="qr-reader"></div>
   </div>
 
-  <!-- 5. Three.js 与 GLTFLoader -->
+  <!-- 三个脚本必须按顺序且不要用 defer -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/loaders/GLTFLoader.js"></script>
-  <!-- 6. 你的主脚本 -->
   <script src="main.js"></script>
 </body>
 </html>
