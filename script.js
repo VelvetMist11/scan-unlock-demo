@@ -1,89 +1,101 @@
-// 模型文件路径（存放在 models 文件夹）
-const modelPaths = [
-  'models/_models_model1.glb',
-  'models/_models_model2.glb',
-  'models/_models_model3.glb',
-  'models/_models_model4.glb'
-];
+// 解锁状态
+const unlocked = [false, false, false, false];
 
-const scenes = [], cameras = [], renderers = [];
+// 预设二维码内容
+const expected = ["UNLOCK0","UNLOCK1","UNLOCK2","UNLOCK3"];
 
-// 初始化每页的 Three.js 场景和渲染器
-for (let i = 1; i <= 4; i++) {
-  const canvas = document.getElementById('canvas' + i);
+// 逐页初始化 Three.js
+for (let i = 0; i < 4; i++) {
+  initThree(`canvas${i}`, `models/model${i}.glb`);
+}
+
+// 扫码实例存储
+const scanners = {};
+
+// 按钮 & 关闭绑定
+document.querySelectorAll('.scan-btn').forEach(btn => {
+  const idx = btn.dataset.page;
+  const overlay = document.getElementById(`overlay${idx}`);
+  const readerId = `reader${idx}`;
+
+  // 点击“扫码解锁”
+  btn.onclick = () => {
+    document.body.style.overflow = 'hidden';  // 禁止滚动
+    overlay.style.display = 'flex';
+    scanners[idx] = new Html5Qrcode(readerId);
+    scanners[idx].start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      text => {
+        if (text === expected[idx]) {
+          scanners[idx].stop().then(() => {
+            overlay.style.display = 'none';
+            unlocked[idx] = true;
+            btn.disabled = true;
+            btn.textContent = '已解锁';
+            checkFourthUnlock();
+          });
+        }
+      },
+      _err => {}
+    ).catch(console.error);
+  };
+
+  // 点击“关闭”
+  overlay.querySelector('.close-scan').onclick = () => {
+    scanners[idx]?.stop().catch(()=>{});
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+  };
+}
+
+// 三个解锁后，自动解锁第四页
+function checkFourthUnlock() {
+  if (unlocked[0] && unlocked[1] && unlocked[2] && !unlocked[3]) {
+    unlocked[3] = true;
+    document.getElementById('overlay3').style.display = 'none';
+    const btn3 = document.querySelector('.scan-btn[data-page="3"]');
+    btn3.disabled = true;
+    btn3.textContent = '已解锁';
+  }
+}
+
+// Three.js 基础初始化
+function initThree(containerId, modelPath) {
+  const container = document.getElementById(containerId);
+  const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  container.appendChild(renderer.domElement);
+
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.z = 3;
-  const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  const camera = new THREE.PerspectiveCamera(
+    60,
+    container.clientWidth / container.clientHeight,
+    0.1,
+    1000
+  );
+  camera.position.set(0,1,3);
+  scene.add(new THREE.AmbientLight(0xffffff,1));
 
-  // 添加基本光源
-  const light = new THREE.HemisphereLight(0xffffff, 0x444444);
-  light.position.set(0, 20, 0);
+  const light = new THREE.DirectionalLight(0xffffff,1);
+  light.position.set(5,10,7);
   scene.add(light);
 
-  // 加载 GLB 模型
-  const loader = new THREE.GLTFLoader();
-  loader.load(modelPaths[i - 1], function(gltf) {
+  new THREE.GLTFLoader().load(modelPath, gltf => {
     scene.add(gltf.scene);
-  }, undefined, function(error) {
-    console.error(error);
-  });
+  },undefined,console.error);
 
-  scenes.push(scene);
-  cameras.push(camera);
-  renderers.push(renderer);
-}
-
-// 渲染循环
-function animate() {
-  requestAnimationFrame(animate);
-  for (let i = 0; i < renderers.length; i++) {
-    renderers[i].render(scenes[i], cameras[i]);
+  function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
   }
-}
-animate();
+  animate();
 
-// 窗口尺寸变化时更新摄像机和渲染器大小
-function onWindowResize() {
-  for (let i = 0; i < cameras.length; i++) {
-    cameras[i].aspect = window.innerWidth / window.innerHeight;
-    cameras[i].updateProjectionMatrix();
-    renderers[i].setSize(window.innerWidth, window.innerHeight);
-  }
-}
-window.addEventListener('resize', onWindowResize);
-
-// 触摸滑动翻页逻辑（监听 touchstart/touchend）
-let currentPage = 0;
-let startX = 0;
-const slider = document.getElementById('slider');
-
-slider.addEventListener('touchstart', e => {
-  startX = e.changedTouches[0].clientX;
-});
-slider.addEventListener('touchend', e => {
-  const endX = e.changedTouches[0].clientX;
-  const threshold = 50; // 滑动阈值（像素）
-  if (endX < startX - threshold && currentPage < 3) {
-    currentPage++;
-  } else if (endX > startX + threshold && currentPage > 0) {
-    currentPage--;
-  }
-  // 切换页面：改变 translateX
-  slider.style.transform = `translateX(${-100 * currentPage}vw)`;
-  // 更新分页指示器
-  document.querySelectorAll('.dot').forEach((dot, index) => {
-    dot.classList.toggle('active', index === currentPage);
+  // 自适应
+  window.addEventListener('resize', () => {
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
   });
-});
-
-// 扫码按钮弹窗逻辑
-document.querySelectorAll('.scan-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.getElementById('overlay').classList.remove('hidden');
-  });
-});
-document.getElementById('overlay-close').addEventListener('click', () => {
-  document.getElementById('overlay').classList.add('hidden');
-});
+}
