@@ -1,101 +1,144 @@
-// 解锁状态
-const unlocked = [false, false, false, false];
+// —— 增强滑动翻页（整屏跳转） —— //
+const pages = document.querySelectorAll('.page');
+const totalPages = pages.length;
+let currentIndex = 0;
+const slider = document.getElementById('slider-container');
 
-// 预设二维码内容
-const expected = ["UNLOCK0","UNLOCK1","UNLOCK2","UNLOCK3"];
+let startX = 0, deltaX = 0, isDragging = false;
 
-// 逐页初始化 Three.js
-for (let i = 0; i < 4; i++) {
-  initThree(`canvas${i}`, `models/model${i}.glb`);
-}
+// 禁止整体页面滚动
+document.addEventListener('touchmove', e => {
+  e.preventDefault();
+}, { passive: false });
 
-// 扫码实例存储
-const scanners = {};
+document.addEventListener('touchstart', e => {
+  startX = e.touches[0].clientX;
+  isDragging = true;
+  slider.style.transition = 'none';
+});
 
-// 按钮 & 关闭绑定
-document.querySelectorAll('.scan-btn').forEach(btn => {
-  const idx = btn.dataset.page;
-  const overlay = document.getElementById(`overlay${idx}`);
-  const readerId = `reader${idx}`;
+document.addEventListener('touchmove', e => {
+  if (!isDragging) return;
+  deltaX = e.touches[0].clientX - startX;
+  slider.style.transform = `translateX(calc(-${currentIndex * 100}vw + ${deltaX}px))`;
+});
 
-  // 点击“扫码解锁”
-  btn.onclick = () => {
-    document.body.style.overflow = 'hidden';  // 禁止滚动
-    overlay.style.display = 'flex';
-    scanners[idx] = new Html5Qrcode(readerId);
-    scanners[idx].start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      text => {
-        if (text === expected[idx]) {
-          scanners[idx].stop().then(() => {
-            overlay.style.display = 'none';
-            unlocked[idx] = true;
-            btn.disabled = true;
-            btn.textContent = '已解锁';
-            checkFourthUnlock();
-          });
-        }
-      },
-      _err => {}
-    ).catch(console.error);
-  };
+document.addEventListener('touchend', e => {
+  if (!isDragging) return;
+  isDragging = false;
+  slider.style.transition = 'transform 0.3s ease';
 
-  // 点击“关闭”
-  overlay.querySelector('.close-scan').onclick = () => {
-    scanners[idx]?.stop().catch(()=>{});
-    overlay.style.display = 'none';
-    document.body.style.overflow = '';
-  };
-}
-
-// 三个解锁后，自动解锁第四页
-function checkFourthUnlock() {
-  if (unlocked[0] && unlocked[1] && unlocked[2] && !unlocked[3]) {
-    unlocked[3] = true;
-    document.getElementById('overlay3').style.display = 'none';
-    const btn3 = document.querySelector('.scan-btn[data-page="3"]');
-    btn3.disabled = true;
-    btn3.textContent = '已解锁';
+  if (deltaX < -50) {
+    currentIndex = Math.min(currentIndex + 1, totalPages - 1);
+  } else if (deltaX > 50) {
+    currentIndex = Math.max(currentIndex - 1, 0);
   }
+  slider.style.transform = `translateX(-${currentIndex * 100}vw)`;
+  updateDots(currentIndex);
+  deltaX = 0;
+});
+
+// 更新分页小点
+function updateDots(index) {
+  document.querySelectorAll('.dot').forEach((dot, i) => {
+    dot.classList.toggle('active', i === index);
+  });
 }
 
-// Three.js 基础初始化
-function initThree(containerId, modelPath) {
-  const container = document.getElementById(containerId);
-  const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-  renderer.setSize(container.clientWidth, container.clientHeight);
-  renderer.setPixelRatio(window.devicePixelRatio);
-  container.appendChild(renderer.domElement);
+// —— Three.js 模型加载 —— //
+const modelPaths = [
+  'models/model0.glb',
+  'models/model1.glb',
+  'models/model2.glb',
+  'models/model3.glb'
+];
 
+modelPaths.forEach((path, i) => {
+  initThreeJS(`canvas${i}`, path);
+});
+
+function initThreeJS(canvasId, modelPath) {
+  const canvas = document.getElementById(canvasId);
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
-    60,
-    container.clientWidth / container.clientHeight,
+    45,
+    canvas.clientWidth / canvas.clientHeight,
     0.1,
     1000
   );
-  camera.position.set(0,1,3);
-  scene.add(new THREE.AmbientLight(0xffffff,1));
+  camera.position.z = 5;
+  scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+  const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+  dir.position.set(5, 5, 5);
+  scene.add(dir);
 
-  const light = new THREE.DirectionalLight(0xffffff,1);
-  light.position.set(5,10,7);
-  scene.add(light);
+  // 适配尺寸
+  function resize() {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    renderer.setSize(w, h);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resize);
+  resize();
 
-  new THREE.GLTFLoader().load(modelPath, gltf => {
-    scene.add(gltf.scene);
-  },undefined,console.error);
+  // 加载 GLB
+  new THREE.GLTFLoader().load(
+    modelPath,
+    gltf => {
+      // 自动居中
+      const obj = gltf.scene;
+      const box = new THREE.Box3().setFromObject(obj);
+      const center = box.getCenter(new THREE.Vector3());
+      obj.position.sub(center);
+      scene.add(obj);
+    },
+    undefined,
+    err => console.error('模型加载失败：', modelPath, err)
+  );
 
-  function animate() {
+  // 渲染循环
+  (function animate() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
-  }
-  animate();
-
-  // 自适应
-  window.addEventListener('resize', () => {
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    camera.aspect = container.clientWidth / container.clientHeight;
-    camera.updateProjectionMatrix();
-  });
+  })();
 }
+
+// —— 扫码解锁 —— //
+let html5QrCode = null;
+const overlay = document.getElementById('qr-overlay');
+
+document.querySelectorAll('.scan-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    overlay.style.display = 'flex';
+    // 初始化扫码器（只做一次）
+    if (!html5QrCode) {
+      html5QrCode = new Html5Qrcode('qr-reader');
+    }
+    html5QrCode.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: 250 },
+      (decodedText) => {
+        console.log('扫码结果：', decodedText);
+        // 如果需要校验 decodedText，可在此判断
+        html5QrCode.stop().then(() => {
+          overlay.style.display = 'none';
+        });
+      },
+      (err) => {
+        // 扫码失败回调，可忽略
+      }
+    ).catch(err => console.error('启动扫码失败', err));
+  });
+});
+
+// 关闭按钮
+document.getElementById('close-scan').addEventListener('click', () => {
+  if (html5QrCode) {
+    html5QrCode.stop().catch(console.warn);
+  }
+  overlay.style.display = 'none';
+});
