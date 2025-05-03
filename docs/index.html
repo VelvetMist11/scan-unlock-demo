@@ -1,111 +1,38 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="referrer" content="no-referrer" />
-  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
-  <title>模型滑动展示</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      height: 100%;
-      background: #000;
-    }
-    #slider-container {
-      display: flex;
-      width: 400vw;
-      height: 100vh;
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .page {
-      width: 100vw;
-      height: 100vh;
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-    .canvas-wrapper {
-      width: 100%;
-      height: 80vh;
-      overflow: hidden;
-      position: relative;
-    }
-    .model-canvas {
-      width: 100% !important;
-      height: 100% !important;
-      object-fit: contain;
-    }
-    .scan-btn {
-      position: absolute;
-      bottom: 10vh;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 56px;
-      height: 56px;
-      border-radius: 28px;
-      background: rgba(255,255,255,0.9);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-    }
-    .scan-icon {
-      width: 24px;
-      height: 24px;
-      fill: #333;
-    }
-    #pagination {
-      position: fixed;
-      bottom: 5vh;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 10px;
-      background: rgba(0,0,0,0.3);
-      padding: 8px 16px;
-      border-radius: 20px;
-      z-index: 200;
-    }
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.5);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .dot.active {
-      background: #fff;
-      width: 24px;
-      border-radius: 4px;
-    }
-  </style>
+  <!-- 基本 meta 与 引入样式 -->
 </head>
 <body>
+  <!-- 1. 滑动容器 -->
   <div id="slider-container">
-    <!-- Page 0 to 3 -->
-    <div class="page" data-index="0"><div class="canvas-wrapper"><canvas class="model-canvas" id="model0"></canvas></div><button class="scan-btn" data-target="0"><svg class="scan-icon" viewBox="0 0 24 24"><path d="M4 4h4v2H4zm12 0h4v2h-4zM4 20h4v2H4zm12 0h4v2h-4zM2 8h2v8H2zm18 0h2v8h-2zM6 6h12v12H6z"/></svg></button></div>
-    <div class="page" data-index="1"><div class="canvas-wrapper"><canvas class="model-canvas" id="model1"></canvas></div><button class="scan-btn" data-target="1"><svg class="scan-icon" viewBox="0 0 24 24"><path d="M4 4h4v2H4zm12 0h4v2h-4zM4 20h4v2H4zm12 0h4v2h-4zM2 8h2v8H2zm18 0h2v8h-2zM6 6h12v12H6z"/></svg></button></div>
-    <div class="page" data-index="2"><div class="canvas-wrapper"><canvas class="model-canvas" id="model2"></canvas></div><button class="scan-btn" data-target="2"><svg class="scan-icon" viewBox="0 0 24 24"><path d="M4 4h4v2H4zm12 0h4v2h-4zM4 20h4v2H4zm12 0h4v2h-4zM2 8h2v8H2zm18 0h2v8h-2zM6 6h12v12H6z"/></svg></button></div>
-    <div class="page" data-index="3"><div class="canvas-wrapper"><canvas class="model-canvas" id="model3"></canvas></div><button class="scan-btn" data-target="3"><svg class="scan-icon" viewBox="0 0 24 24"><path d="M4 4h4v2H4zm12 0h4v2h-4zM4 20h4v2H4zm12 0h4v2h-4zM2 8h2v8H2zm18 0h2v8h-2zM6 6h12v12H6z"/></svg></button></div>
+    <!-- 2. 四屏 .page，每屏一个 canvas + 扫码按钮 -->
+    <div class="page" data-index="0">
+      <div class="canvas-wrapper">
+        <canvas class="model-canvas" id="model0"></canvas>
+      </div>
+      <button class="scan-btn" data-target="0">…</button>
+    </div>
+    … 共四个 page …
   </div>
 
+  <!-- 3. 分页指示器 -->
   <div id="pagination">
-    <span class="dot active"></span>
-    <span class="dot"></span>
-    <span class="dot"></span>
-    <span class="dot"></span>
+    <span class="dot active"></span>… 共四个 dot …
   </div>
 
+  <!-- 4. 扫码弹窗 overlay -->
+  <div id="qr-overlay">
+    <div class="scanner-header">
+      <button id="close-scan">‹</button>
+    </div>
+    <div id="qr-reader"></div>
+  </div>
+
+  <!-- 5. Three.js 与 GLTFLoader -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/loaders/GLTFLoader.js"></script>
+  <!-- 6. 你的主脚本 -->
   <script src="main.js"></script>
 </body>
 </html>
