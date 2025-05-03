@@ -1,94 +1,70 @@
 class PageSlider {
   constructor() {
     this.slider = document.getElementById('slider-container');
-    this.pages = Array.from(document.querySelectorAll('.page'));
+    this.pages  = Array.from(document.querySelectorAll('.page'));
     this.currentIndex = 0;
     this.touchStartX = 0;
-    this.isDragging = false;
+    this.isDragging  = false;
 
     this.initTouchEvents();
     this.initModels();
+    this.initScanButtons();
   }
 
   initTouchEvents() {
     document.addEventListener('touchstart', e => {
       this.touchStartX = e.touches[0].clientX;
-      this.isDragging = true;
+      this.isDragging  = true;
+      // 禁用过渡以获得实时拖动效果
       this.slider.style.transition = 'none';
     });
 
     document.addEventListener('touchmove', e => {
       if (!this.isDragging) return;
-      const deltaX = e.touches[0].clientX - this.touchStartX;
-      this.slider.style.transform = `translateX(calc(-${this.currentIndex * 100}vw + ${deltaX}px))`;
-    });
+      // 🔒 阻止系统默认拖动（地图滚动）行为
+      e.preventDefault();
+      let deltaX = e.touches[0].clientX - this.touchStartX;
+      this.slider.style.transform = `translateX(calc(-${this.currentIndex} * 100vw + ${deltaX}px))`;
+    }, {passive:false});
 
     document.addEventListener('touchend', e => {
       if (!this.isDragging) return;
       this.isDragging = false;
-      this.slider.style.transition = '';
+      // 恢复过渡动画
+      this.slider.style.transition = 'transform 0.3s ease';
 
-      const deltaX = e.changedTouches[0].clientX - this.touchStartX;
+      let deltaX = e.changedTouches[0].clientX - this.touchStartX;
       const threshold = window.innerWidth * 0.15;
-
-      if (Math.abs(deltaX) > threshold) {
-        this.currentIndex += deltaX > 0 ? -1 : 1;
-        this.currentIndex = Math.max(0, Math.min(this.currentIndex, this.pages.length - 1));
-      }
+      if (deltaX < -threshold)       this.currentIndex = Math.min(this.currentIndex+1, this.pages.length-1);
+      else if (deltaX > threshold)   this.currentIndex = Math.max(this.currentIndex-1, 0);
 
       this.updateSlider();
     });
   }
 
   updateSlider() {
-    this.slider.style.transform = `translateX(-${this.currentIndex * 100}vw)`;
-    document.querySelectorAll('.dot').forEach((dot, index) => {
-      dot.classList.toggle('active', index === this.currentIndex);
-    });
+    this.slider.style.transform = `translateX(-${this.currentIndex}00vw)`;
+    document.querySelectorAll('.dot')
+      .forEach((d,i) => d.classList.toggle('active', i===this.currentIndex));
   }
 
   initModels() {
-    this.pages.forEach((page, index) => {
-      const canvas = page.querySelector('.model-canvas');
-      this.initThreeJS(canvas, `models/model${index}.glb`);
-    });
+    document.querySelectorAll('.model-canvas').forEach((canvas,i) =>
+      initThreeJS(canvas, `models/model${i}.glb`)
+    );
   }
 
-  initThreeJS(canvas, modelPath) {
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      alpha: true,
-      powerPreference: 'high-performance'
+  initScanButtons() {
+    document.querySelectorAll('.scan-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('qr-overlay').style.display = 'flex';
+      });
     });
-
-    const resize = () => {
-      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    };
-
-    window.addEventListener('resize', resize);
-    resize();
-
-    new THREE.GLTFLoader().load(modelPath, gltf => {
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
-      camera.position.z = 5;
-      scene.add(gltf.scene);
-
-      const box = new THREE.Box3().setFromObject(gltf.scene);
-      const center = box.getCenter(new THREE.Vector3());
-      gltf.scene.position.sub(center);
-
-      const animate = () => {
-        requestAnimationFrame(animate);
-        renderer.render(scene, camera);
-      };
-      animate();
-    }, undefined, err => {
-      console.error(`模型加载失败: ${modelPath}`, err);
+    document.getElementById('close-scan').addEventListener('click', () => {
+      document.getElementById('qr-overlay').style.display = 'none';
     });
   }
 }
 
+// 对应的 Three.js 初始化函数，此处略
 new PageSlider();
