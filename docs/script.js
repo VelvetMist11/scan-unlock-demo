@@ -1,73 +1,89 @@
-// 1. 翻页控制
-const slider = document.getElementById('slider-container');
-const pages  = document.querySelectorAll('.page');
-let currentIndex = 0;
-let startX = 0, deltaX = 0, dragging = false;
+// 模型文件路径（存放在 models 文件夹）
+const modelPaths = [
+  'models/_models_model1.glb',
+  'models/_models_model2.glb',
+  'models/_models_model3.glb',
+  'models/_models_model4.glb'
+];
 
-function goToPage(idx) {
-  currentIndex = Math.max(0, Math.min(idx, pages.length - 1));
-  slider.style.transform = `translateX(-${currentIndex * 100}vw)`;
-  document.querySelectorAll('.dot').forEach((d,i) =>
-    d.classList.toggle('active', i === currentIndex)
-  );
-}
+const scenes = [], cameras = [], renderers = [];
 
-// 2. 触摸事件
-slider.addEventListener('touchstart', e => {
-  startX = e.touches[0].clientX;
-  dragging = true;
-  slider.style.transition = 'none';
-});
-slider.addEventListener('touchmove', e => {
-  if (!dragging) return;
-  deltaX = e.touches[0].clientX - startX;
-  slider.style.transform = `translateX(calc(-${currentIndex * 100}vw + ${deltaX}px))`;
-  e.preventDefault();  // 禁止系统滚动
-}, { passive:false });
-slider.addEventListener('touchend', e => {
-  dragging = false;
-  slider.style.transition = 'transform 0.3s ease';
-  if (deltaX < -50)  goToPage(currentIndex + 1);
-  else if (deltaX > 50) goToPage(currentIndex - 1);
-  else goToPage(currentIndex);
-  deltaX = 0;
-});
-
-// 3. Three.js 简易初始化
-function initThreeJS(canvasId, modelPath) {
-  const canvas = document.getElementById(canvasId);
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
+// 初始化每页的 Three.js 场景和渲染器
+for (let i = 1; i <= 4; i++) {
+  const canvas = document.getElementById('canvas' + i);
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45,
-      window.innerWidth/window.innerHeight, 0.1, 100
-  );
-  camera.position.z = 5;
-  new THREE.DirectionalLight(0xffffff,1).position.set(1,1,1).addTo(scene);
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 3;
+  const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
 
-  new THREE.GLTFLoader().load(modelPath, gltf => {
+  // 添加基本光源
+  const light = new THREE.HemisphereLight(0xffffff, 0x444444);
+  light.position.set(0, 20, 0);
+  scene.add(light);
+
+  // 加载 GLB 模型
+  const loader = new THREE.GLTFLoader();
+  loader.load(modelPaths[i - 1], function(gltf) {
     scene.add(gltf.scene);
-    animate();
+  }, undefined, function(error) {
+    console.error(error);
   });
 
-  function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+  scenes.push(scene);
+  cameras.push(camera);
+  renderers.push(renderer);
+}
+
+// 渲染循环
+function animate() {
+  requestAnimationFrame(animate);
+  for (let i = 0; i < renderers.length; i++) {
+    renderers[i].render(scenes[i], cameras[i]);
   }
 }
+animate();
 
-// 4. 扫码弹窗
-document.querySelectorAll('.scan-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.getElementById('qr-overlay').style.display = 'flex';
+// 窗口尺寸变化时更新摄像机和渲染器大小
+function onWindowResize() {
+  for (let i = 0; i < cameras.length; i++) {
+    cameras[i].aspect = window.innerWidth / window.innerHeight;
+    cameras[i].updateProjectionMatrix();
+    renderers[i].setSize(window.innerWidth, window.innerHeight);
+  }
+}
+window.addEventListener('resize', onWindowResize);
+
+// 触摸滑动翻页逻辑（监听 touchstart/touchend）
+let currentPage = 0;
+let startX = 0;
+const slider = document.getElementById('slider');
+
+slider.addEventListener('touchstart', e => {
+  startX = e.changedTouches[0].clientX;
+});
+slider.addEventListener('touchend', e => {
+  const endX = e.changedTouches[0].clientX;
+  const threshold = 50; // 滑动阈值（像素）
+  if (endX < startX - threshold && currentPage < 3) {
+    currentPage++;
+  } else if (endX > startX + threshold && currentPage > 0) {
+    currentPage--;
+  }
+  // 切换页面：改变 translateX
+  slider.style.transform = `translateX(${-100 * currentPage}vw)`;
+  // 更新分页指示器
+  document.querySelectorAll('.dot').forEach((dot, index) => {
+    dot.classList.toggle('active', index === currentPage);
   });
 });
-document.getElementById('close-scan')
-  .addEventListener('click', () => {
-    document.getElementById('qr-overlay').style.display = 'none';
-  });
 
-// 5. 启动：加载模型、初始页
-['canvas0','canvas1','canvas2','canvas3']
-  .forEach((id,i) => initThreeJS(id, `models/model${i}.glb`));
-goToPage(0);
+// 扫码按钮弹窗逻辑
+document.querySelectorAll('.scan-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('overlay').classList.remove('hidden');
+  });
+});
+document.getElementById('overlay-close').addEventListener('click', () => {
+  document.getElementById('overlay').classList.add('hidden');
+});
