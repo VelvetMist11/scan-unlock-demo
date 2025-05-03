@@ -1,55 +1,70 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
+<html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <title>3D 模型翻页展示</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>3D模型扫码解锁</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- 扫码库 -->
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <!-- Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.174.0/build/three.min.js"></script>
+  <!-- GLTFLoader -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.174.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
-  <!-- 滑动容器 -->
-  <div id="slider">
-    <!-- 第1页 -->
-    <div class="page" id="page1">
-      <canvas id="canvas1"></canvas>
-      <button class="scan-btn">扫码</button>
-    </div>
-    <!-- 第2页 -->
-    <div class="page" id="page2">
-      <canvas id="canvas2"></canvas>
-      <button class="scan-btn">扫码</button>
-    </div>
-    <!-- 第3页 -->
-    <div class="page" id="page3">
-      <canvas id="canvas3"></canvas>
-      <button class="scan-btn">扫码</button>
-    </div>
-    <!-- 第4页 -->
-    <div class="page" id="page4">
-      <canvas id="canvas4"></canvas>
-      <button class="scan-btn">扫码</button>
+
+<div class="container">
+  <!-- 四个页面 page0–page3 -->
+  <div class="page" id="page0">
+    <div id="canvas0" class="canvas"></div>
+    <button class="scan-btn" data-page="0">扫码解锁</button>
+    <div class="overlay" id="overlay0">
+      <div class="scanner-container">
+        <div id="reader0" class="scan-box"></div>
+        <p class="instruction">请将二维码置于框内</p>
+        <button class="close-scan">关闭</button>
+      </div>
     </div>
   </div>
 
-  <!-- 分页指示器 -->
-  <div id="dots">
-    <span class="dot active"></span>
-    <span class="dot"></span>
-    <span class="dot"></span>
-    <span class="dot"></span>
-  </div>
-
-  <!-- 二维码遮罩层（初始隐藏） -->
-  <div id="overlay" class="hidden">
-    <div id="overlay-content">
-      <span id="overlay-close">X</span>
-      <img src="qrcode.png" alt="二维码">
+  <div class="page" id="page1">
+    <div id="canvas1" class="canvas"></div>
+    <button class="scan-btn" data-page="1">扫码解锁</button>
+    <div class="overlay" id="overlay1">
+      <div class="scanner-container">
+        <div id="reader1" class="scan-box"></div>
+        <p class="instruction">请将二维码置于框内</p>
+        <button class="close-scan">关闭</button>
+      </div>
     </div>
   </div>
 
-  <!-- 引入 Three.js 和 GLTFLoader（必须在脚本前加载） -->
-  <script src="three.min.js"></script>
-  <script src="GLTFLoader.js"></script>
-  <!-- 自定义脚本 -->
-  <script src="script.js"></script>
+  <div class="page" id="page2">
+    <div id="canvas2" class="canvas"></div>
+    <button class="scan-btn" data-page="2">扫码解锁</button>
+    <div class="overlay" id="overlay2">
+      <div class="scanner-container">
+        <div id="reader2" class="scan-box"></div>
+        <p class="instruction">请将二维码置于框内</p>
+        <button class="close-scan">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page3">
+    <div id="canvas3" class="canvas"></div>
+    <button class="scan-btn" data-page="3">扫码解锁</button>
+    <div class="overlay" id="overlay3">
+      <div class="scanner-container">
+        <div id="reader3" class="scan-box"></div>
+        <p class="instruction">请将二维码置于框内</p>
+        <button class="close-scan">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
