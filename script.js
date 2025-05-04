@@ -1,128 +1,119 @@
-// —— 模块化加载 Three.js 与 GLTFLoader —— //
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js';
-import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/loaders/GLTFLoader.js';
- 
-// —— 整页滑动逻辑 —— //
-const pages = document.querySelectorAll('.page');
-const totalPages = pages.length;
-let currentIndex = 0;
+// script.js （ES Modules）
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.174.0/build/three.module.js';
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.174.0/examples/jsm/loaders/GLTFLoader.js';
+
+// 全局状态
+const pages       = document.querySelectorAll('.page');
+const totalPages  = pages.length;
+const dots        = document.querySelectorAll('.dot');
+let   currentIndex= 0;
+const unlocked    = Array(totalPages).fill(false);
+
+// 滑动翻页
+let startX, isDragging=false;
 const slider = document.getElementById('slider-container');
-
-let startX = 0, deltaX = 0, isDragging = false;
-
-// 阻止浏览器默认滚动
-document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
-
-document.addEventListener('touchstart', e => {
-  startX = e.touches[0].clientX;
-  isDragging = true;
-  slider.style.transition = 'none';
+document.addEventListener('touchstart', e=>{
+  startX = e.touches[0].clientX; isDragging=true;
+  slider.style.transition='none';
+});
+document.addEventListener('touchmove', e=>{
+  if(!isDragging) return;
+  e.preventDefault(); // 禁止页面拖动
+  const delta = e.touches[0].clientX - startX;
+  slider.style.transform = `translateX(calc(-${currentIndex*100}vw + ${delta}px))`;
+},{passive:false});
+document.addEventListener('touchend', e=>{
+  if(!isDragging) return;
+  isDragging=false;
+  slider.style.transition='transform 0.4s ease';
+  const delta = e.changedTouches[0].clientX - startX;
+  if(delta < -50) currentIndex = Math.min(currentIndex+1, totalPages-1);
+  else if(delta > 50) currentIndex = Math.max(currentIndex-1, 0);
+  goToPage(currentIndex);
 });
 
-document.addEventListener('touchmove', e => {
-  if (!isDragging) return;
-  deltaX = e.touches[0].clientX - startX;
-  slider.style.transform = `translateX(calc(-${currentIndex * 100}vw + ${deltaX}px))`;
-});
-
-document.addEventListener('touchend', () => {
-  if (!isDragging) return;
-  isDragging = false;
-  slider.style.transition = 'transform 0.3s ease';
-  if (deltaX < -50) currentIndex = Math.min(currentIndex + 1, totalPages - 1);
-  else if (deltaX > 50) currentIndex = Math.max(currentIndex - 1, 0);
-  slider.style.transform = `translateX(-${currentIndex * 100}vw)`;
-  updateDots();
-  deltaX = 0;
-});
-
-function updateDots() {
-  document.querySelectorAll('.dot').forEach((dot, i) => {
-    dot.classList.toggle('active', i === currentIndex);
-  });
+// 更新页面和指示器
+function goToPage(i){
+  slider.style.transform = `translateX(-${i*100}vw)`;
+  dots.forEach((d,idx)=> d.classList.toggle('active', idx===i));
 }
 
-// —— Three.js 渲染 3D 模型 —— //
-const modelPaths = [
-  'models/model0.glb',
-  'models/model1.glb',
-  'models/model2.glb',
-  'models/model3.glb'
-];
-
-modelPaths.forEach((path, idx) => initThreeJS(`canvas${idx}`, path));
-
-function initThreeJS(canvasId, glbPath) {
-  const canvas = document.getElementById(canvasId);
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
+// Three.js 初始化
+pages.forEach((page, idx)=>{
+  const canvas = page.querySelector('.model-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+  const scene    = new THREE.Scene();
+  const camera   = new THREE.PerspectiveCamera(45,1,0.1,1000);
   camera.position.z = 5;
-
-  scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-  const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+  scene.add(new THREE.AmbientLight(0xffffff,0.8));
+  const dir = new THREE.DirectionalLight(0xffffff,1);
   dir.position.set(5,5,5);
   scene.add(dir);
 
-  // 尺寸自适应
-  function resize() {
-    const w = canvas.clientWidth, h = canvas.clientHeight;
-    renderer.setSize(w, h);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    camera.aspect = w/h;
-    camera.updateProjectionMatrix();
-  }
-  window.addEventListener('resize', resize);
+  const resize = ()=>{
+    const w=canvas.clientWidth, h=canvas.clientHeight;
+    renderer.setSize(w,h);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+    camera.aspect = w/h; camera.updateProjectionMatrix();
+  };
+  window.addEventListener('resize',resize);
   resize();
 
-  // 加载 GLB
-  new GLTFLoader().load(
-    glbPath,
-    gltf => {
-      const obj = gltf.scene;
-      // 居中
-      const box = new THREE.Box3().setFromObject(obj);
-      const center = box.getCenter(new THREE.Vector3());
-      obj.position.sub(center);
-      scene.add(obj);
-    },
-    undefined,
-    err => console.error('GLB加载失败:', err)
-  );
+  new GLTFLoader().load(`models/model${idx}.glb`, gltf=>{
+    // 模型居中
+    const box = new THREE.Box3().setFromObject(gltf.scene);
+    const center = box.getCenter(new THREE.Vector3());
+    gltf.scene.position.sub(center);
+    scene.add(gltf.scene);
+  });
 
   // 渲染循环
-  (function animate() {
+  (function animate(){
     requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+    renderer.render(scene,camera);
   })();
-}
+});
 
-// —— 扫码解锁 —— //
-let html5QrCode = null;
-const overlay = document.getElementById('qr-overlay');
-const closeBtn = document.getElementById('close-scan');
+// html5‑qrcode 解锁逻辑
+const qrOverlay = document.getElementById('qr-overlay');
+const qrReader  = document.getElementById('qr-reader');
+let   qrCode    = null;
 
-document.querySelectorAll('.scan-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    overlay.style.display = 'flex';
-    if (!html5QrCode) {
-      html5QrCode = new Html5Qrcode('qr-reader');
-    }
-    html5QrCode.start(
-      { facingMode: 'environment' },
-      { fps: 10, qrbox: 250 },
-      decoded => {
-        console.log('扫码:', decoded);
-        html5QrCode.stop()
-          .then(() => overlay.style.display = 'none')
-          .catch(console.error);
-      },
-      err => {}
-    ).catch(console.error);
+// 点击扫码按钮
+document.querySelectorAll('.scan-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const idx = +btn.dataset.target;
+    // 显示全屏预览
+    qrOverlay.style.display = 'flex';
+    // 禁用滑动
+    isDragging = false;
+    // 启动摄像头
+    qrCode = new Html5Qrcode("qr-reader");
+    qrCode.start(
+      { facingMode: "environment" },
+      { fps:10, qrbox:250 },
+      decoded=>{
+        if(decoded === `UNLOCK${idx}`){
+          qrCode.stop().then(()=>qrCode.clear());
+          qrOverlay.style.display = 'none';
+          // 解锁本页：移除模糊 & 隐藏按钮
+          pages[idx].style.backdropFilter = 'none';
+          btn.style.display = 'none';
+          unlocked[idx]=true;
+          // 自动解锁第四页
+          if(unlocked[0]&&unlocked[1]&&unlocked[2]){
+            pages[3].style.backdropFilter='none';
+            document.querySelector('[data-target="3"]').style.display='none';
+            unlocked[3]=true;
+          }
+        }
+      }
+    );
   });
 });
 
-closeBtn.addEventListener('click', () => {
-  if (html5QrCode) html5QrCode.stop().catch(()=>{});
-  overlay.style.display = 'none';
+// 关闭扫码预览
+document.getElementById('close-scan').addEventListener('click', ()=>{
+  if(qrCode) qrCode.stop().catch(()=>{}).then(()=>qrCode.clear());
+  qrOverlay.style.display = 'none';
 });
