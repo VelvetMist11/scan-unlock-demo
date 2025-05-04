@@ -1,45 +1,41 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta 
-    name="viewport" 
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-  />
-  <meta name="theme-color" content="#000000" />
-  <title>模型滑动展示</title>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Scan‑Unlock 3D 演示</title>
   <link rel="stylesheet" href="style.css" />
-  <!-- html5‑qrcode 保留全局脚本 -->
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <!-- html5‑qrcode -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
 </head>
 <body>
+
+  <!-- 横向滑动容器 -->
   <div id="slider-container">
+    <!-- Page 1 -->
     <div class="page" data-index="0">
-      <div class="canvas-wrapper">
-        <canvas class="model-canvas" id="canvas0"></canvas>
-      </div>
+      <div class="canvas-wrapper"><canvas id="canvas0" class="model-canvas"></canvas></div>
       <button class="scan-btn" data-target="0">扫码解锁</button>
     </div>
+    <!-- Page 2 -->
     <div class="page" data-index="1">
-      <div class="canvas-wrapper">
-        <canvas class="model-canvas" id="canvas1"></canvas>
-      </div>
+      <div class="canvas-wrapper"><canvas id="canvas1" class="model-canvas"></canvas></div>
       <button class="scan-btn" data-target="1">扫码解锁</button>
     </div>
+    <!-- Page 3 -->
     <div class="page" data-index="2">
-      <div class="canvas-wrapper">
-        <canvas class="model-canvas" id="canvas2"></canvas>
-      </div>
+      <div class="canvas-wrapper"><canvas id="canvas2" class="model-canvas"></canvas></div>
       <button class="scan-btn" data-target="2">扫码解锁</button>
     </div>
+    <!-- Page 4 -->
     <div class="page" data-index="3">
-      <div class="canvas-wrapper">
-        <canvas class="model-canvas" id="canvas3"></canvas>
-      </div>
+      <div class="canvas-wrapper"><canvas id="canvas3" class="model-canvas"></canvas></div>
       <button class="scan-btn" data-target="3">扫码解锁</button>
     </div>
   </div>
 
+  <!-- 分页指示器 -->
   <div id="pagination">
     <span class="dot active"></span>
     <span class="dot"></span>
@@ -47,14 +43,13 @@
     <span class="dot"></span>
   </div>
 
+  <!-- 全屏扫码预览层（透明，至顶层） -->
   <div id="qr-overlay">
-    <div class="scanner-header">
-      <button id="close-scan">✕</button>
-    </div>
     <div id="qr-reader"></div>
+    <button id="close-scan">×</button>
   </div>
 
-  <!-- 改成 type="module" -->
+  <!-- Three.js ES 模块和业务脚本 -->
   <script type="module" src="script.js"></script>
 </body>
 </html>
